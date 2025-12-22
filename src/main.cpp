@@ -1,20 +1,21 @@
-#include "imgui.h" // necessary for ImGui::*, imgui-SFML.h doesn't include imgui.h
-
-#include "imgui-SFML.h" // for ImGui::SFML::* functions and SFML-specific overloads
-
+#include "imgui.h"
+#include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
+#include "Simulation/Circuit.h"
+#include "Core/Gates.h"
+#include "Core/IOComponents.h"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({640, 480}), "ImGui + SFML = <3");
+    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Gate Simulator");
     window.setFramerateLimit(60);
     if (!ImGui::SFML::Init(window))
         return -1;
 
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
-
+    Circuit circuit;
+    bool simulationRunning = false;
     sf::Clock deltaClock;
+
     while (window.isOpen())
     {
         while (const auto event = window.pollEvent())
@@ -25,21 +26,58 @@ int main()
             {
                 window.close();
             }
+            
+            // Pass event to circuit for Interaction (if mapped to window coords)
+            // But we might want to block circuit interaction if mouse is over ImGui?
+            if (!ImGui::GetIO().WantCaptureMouse) {
+                circuit.handleEvent(*event, window);
+            }
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGui::ShowDemoWindow();
-
-        ImGui::Begin("Hello, world!");
-        ImGui::Button("Look at this pretty button");
+        // UI
+        ImGui::Begin("Component Picker");
+        if (ImGui::Button("Add AND Gate")) {
+            circuit.addComponent(std::make_unique<AndGate>(sf::Vector2f(100, 100)));
+        }
+        if (ImGui::Button("Add OR Gate")) {
+            circuit.addComponent(std::make_unique<OrGate>(sf::Vector2f(100, 100)));
+        }
+        if (ImGui::Button("Add NOT Gate")) {
+            circuit.addComponent(std::make_unique<NotGate>(sf::Vector2f(100, 100)));
+        }
+        if (ImGui::Button("Add Button")) {
+            circuit.addComponent(std::make_unique<Button>(sf::Vector2f(100, 100)));
+        }
+        if (ImGui::Button("Add LED")) {
+            circuit.addComponent(std::make_unique<Led>(sf::Vector2f(100, 100)));
+        }
+        ImGui::Separator();
+        if (ImGui::Button("Clear All")) {
+            circuit.clear();
+        }
         ImGui::End();
 
-        window.clear();
-        window.draw(shape);
+        ImGui::Begin("Simulation Control");
+        ImGui::Checkbox("Run Simulation", &simulationRunning);
+        if (ImGui::Button("Step")) {
+            circuit.update();
+        }
+        ImGui::End();
+
+        if (simulationRunning) {
+            circuit.update();
+        }
+
+        window.clear(sf::Color(20, 20, 20)); // Dark background
+        
+        circuit.draw(window);
+        
         ImGui::SFML::Render(window);
         window.display();
     }
 
     ImGui::SFML::Shutdown();
+    return 0;
 }
