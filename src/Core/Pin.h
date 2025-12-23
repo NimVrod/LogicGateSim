@@ -24,8 +24,8 @@ public:
     void draw(sf::RenderWindow& window);
 
 private:
-    Component* m_parent;
-    PinType m_type;
-    sf::Vector2f m_relativePosition;
-    int m_value;
+    Component* parent;
+    PinType type;
+    sf::Vector2f relativePosition;
+    int value;
 };

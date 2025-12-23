@@ -1,9 +1,10 @@
-#include "imgui.h"
+﻿#include "imgui.h"
 #include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
 #include "Simulation/Circuit.h"
-#include "Core/Gates.h"
-#include "Core/IOComponents.h"
+#include "Core/Components/Include/Button.h"
+#include "Core/Components/Include/AndGate.h"
+#include "Core/Components/Include/OrGate.h"
 
 int main()
 {
@@ -15,6 +16,7 @@ int main()
     Circuit circuit;
     bool simulationRunning = false;
     sf::Clock deltaClock;
+    int numberInputs = 2;
 
     while (window.isOpen())
     {
@@ -38,21 +40,16 @@ int main()
 
         // UI
         ImGui::Begin("Component Picker");
-        if (ImGui::Button("Add AND Gate")) {
-            circuit.addComponent(std::make_unique<AndGate>(sf::Vector2f(100, 100)));
-        }
-        if (ImGui::Button("Add OR Gate")) {
-            circuit.addComponent(std::make_unique<OrGate>(sf::Vector2f(100, 100)));
-        }
-        if (ImGui::Button("Add NOT Gate")) {
-            circuit.addComponent(std::make_unique<NotGate>(sf::Vector2f(100, 100)));
-        }
-        if (ImGui::Button("Add Button")) {
+        if (ImGui::Button("Add button")) {
             circuit.addComponent(std::make_unique<Button>(sf::Vector2f(100, 100)));
         }
-        if (ImGui::Button("Add LED")) {
-            circuit.addComponent(std::make_unique<Led>(sf::Vector2f(100, 100)));
+        if (ImGui::Button("Add AND gate")) {
+            circuit.addComponent(std::make_unique<AndGate>(sf::Vector2f(100, 100), numberInputs));
+		}
+		if (ImGui::Button("Add OR gate")) {
+            circuit.addComponent(std::make_unique<OrGate>(sf::Vector2f(100, 100), numberInputs));
         }
+        ImGui::InputInt("Number of gates", &numberInputs);
         ImGui::Separator();
         if (ImGui::Button("Clear All")) {
             circuit.clear();
@@ -64,6 +61,21 @@ int main()
         if (ImGui::Button("Step")) {
             circuit.update();
         }
+        ImGui::End();
+
+        ImGui::Begin("Component list");
+        const auto& components = circuit.GetComponents();
+        for (int i = 0; i < components.size(); i++)
+        {
+            ImGui::PushID(i);
+            ImGui::Text("%s", components[i]->GetLabel().c_str());
+            ImGui::SameLine();
+            if (ImGui::Button("Delete")) {
+                circuit.removeComponent(components[i]->GetId());
+            }
+            ImGui::PopID();
+        }
+
         ImGui::End();
 
         if (simulationRunning) {

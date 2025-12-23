@@ -11,6 +11,8 @@ public:
     void addComponent(std::unique_ptr<Component> component);
     void addWire(Pin* start, Pin* end);
     void clear();
+    const std::vector<std::unique_ptr<Component>>& GetComponents() const;
+    void removeComponent(int id);
 
     void update();
     void draw(sf::RenderWindow& window);

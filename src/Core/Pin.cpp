@@ -3,33 +3,33 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 Pin::Pin(Component* parent, PinType type, sf::Vector2f relativePosition)
-    : m_parent(parent), m_type(type), m_relativePosition(relativePosition), m_value(0)
+    : parent(parent), type(type), relativePosition(relativePosition), value(0)
 {
 }
 
 void Pin::setValue(int value) {
-    m_value = value;
+	this->value = value;
 }
 
 int Pin::getValue() const {
-    return m_value;
+    return value;
 }
 
 PinType Pin::getType() const {
-    return m_type;
+    return type;
 }
 
 sf::Vector2f Pin::getPosition() const {
-    return m_parent->getPosition() + m_relativePosition;
+    return parent->getPosition() + relativePosition;
 }
 
 Component* Pin::getParent() const {
-    return m_parent;
+    return parent;
 }
 
 void Pin::draw(sf::RenderWindow& window) {
     // Determine color based on state
-    sf::Color fillColor = (m_value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50); // Green for high, dark gray for low
+    sf::Color fillColor = (value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50); // Green for high, dark gray for low
     
     // Maybe different colors for Input vs Output?
     // Inputs are usually where wires end, Outputs where wires start.

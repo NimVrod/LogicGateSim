@@ -1,0 +1,58 @@
+Wersja programu MSBuild 18.0.5+e22287bf1 dla .NET Framework
+
+  freetype.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-build\lib\Debug\freetyped.lib
+  sfml-system.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-build\lib\Debug\sfml-system-s-d.lib
+  sfml-window.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-build\lib\Debug\sfml-window-s-d.lib
+  sfml-graphics.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-build\lib\Debug\sfml-graphics-s-d.lib
+  ImGui-SFML.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\imgui-sfml-build\Debug\ImGui-SFML.lib
+  Pin.cpp
+  Wire.cpp
+E:\Temp\GitHub\LogicGateSim\src\Core\Pin.cpp(38,11): error C2660: "sf::Transformable::setOrigin": funkcja nie przyjmuje 2 argument├│w [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-src\include\SFML\Graphics\Transformable.hpp(115,10):
+      zobacz deklaracj─Ö ÔÇ×sf::Transformable::setOriginÔÇŁ
+      E:\Temp\GitHub\LogicGateSim\src\Core\Pin.cpp(38,11):
+      podczas pr├│by dopasowania listy argument├│w "(float, float)"
+  
+  Gates.cpp
+E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(25,19): error C2440: "<function-style-cast>": nie mo┼╝na konwertowa─ç z "initializer list" na "sf::Vertex" [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(25,19):
+      "sf::Vertex::Vertex": funkcja nie przyjmuje 2 argument├│w
+          E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(25,19):
+          podczas pr├│by dopasowania listy argument├│w "(sf::Vector2f, sf::Color)"
+  
+E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(26,19): error C2440: "<function-style-cast>": nie mo┼╝na konwertowa─ç z "initializer list" na "sf::Vertex" [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(26,19):
+      "sf::Vertex::Vertex": funkcja nie przyjmuje 2 argument├│w
+          E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(26,19):
+          podczas pr├│by dopasowania listy argument├│w "(sf::Vector2f, sf::Color)"
+  
+E:\Temp\GitHub\LogicGateSim\src\Core\Wire.cpp(24,23): error C3078: nale┼╝y okre┼Ťli─ç rozmiar tablicy w nowych wyra┼╝eniach bez inicjatora [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+E:\Temp\GitHub\LogicGateSim\src\Core\Gates.cpp(7,12): error C2660: "sf::Transformable::setOrigin": funkcja nie przyjmuje 2 argument├│w [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-src\include\SFML\Graphics\Transformable.hpp(115,10):
+      zobacz deklaracj─Ö ÔÇ×sf::Transformable::setOriginÔÇŁ
+      E:\Temp\GitHub\LogicGateSim\src\Core\Gates.cpp(7,12):
+      podczas pr├│by dopasowania listy argument├│w "(float, float)"
+  
+  IOComponents.cpp
+E:\Temp\GitHub\LogicGateSim\src\Core\IOComponents.cpp(44,12): error C2660: "sf::Transformable::setOrigin": funkcja nie przyjmuje 2 argument├│w [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-src\include\SFML\Graphics\Transformable.hpp(115,10):
+      zobacz deklaracj─Ö ÔÇ×sf::Transformable::setOriginÔÇŁ
+      E:\Temp\GitHub\LogicGateSim\src\Core\IOComponents.cpp(44,12):
+      podczas pr├│by dopasowania listy argument├│w "(float, float)"
+  
+  Circuit.cpp
+E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(55,23): error C2440: "<function-style-cast>": nie mo┼╝na konwertowa─ç z "initializer list" na "sf::Vertex" [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(55,23):
+      "sf::Vertex::Vertex": funkcja nie przyjmuje 2 argument├│w
+          E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(55,23):
+          podczas pr├│by dopasowania listy argument├│w "(sf::Vector2f, const sf::Color)"
+  
+E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(56,23): error C2440: "<function-style-cast>": nie mo┼╝na konwertowa─ç z "initializer list" na "sf::Vertex" [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+      E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(56,23):
+      "sf::Vertex::Vertex": funkcja nie przyjmuje 2 argument├│w
+          E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(56,23):
+          podczas pr├│by dopasowania listy argument├│w "(sf::Vector2f, const sf::Color)"
+  
+E:\Temp\GitHub\LogicGateSim\src\Simulation\Circuit.cpp(54,27): error C3078: nale┼╝y okre┼Ťli─ç rozmiar tablicy w nowych wyra┼╝eniach bez inicjatora [E:\Temp\GitHub\LogicGateSim\out\src\imgui-sfml-example.vcxproj]
+  Generowanie kodu...
+  sfml-main.vcxproj -> E:\Temp\GitHub\LogicGateSim\out\_deps\sfml-build\lib\Debug\sfml-main-d.lib

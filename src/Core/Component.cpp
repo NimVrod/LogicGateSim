@@ -1,5 +1,7 @@
 #include "Component.h"
 
+int Component::nextId = 0;
+
 Component::Component(sf::Vector2f position)
     : m_position(position)
 {
@@ -8,10 +10,10 @@ Component::Component(sf::Vector2f position)
 
 void Component::draw(sf::RenderWindow& window) {
     // Base draw can handle pins
-    for (const auto& pin : m_inputs) {
+    for (const auto& pin : inputs) {
         pin->draw(window);
     }
-    for (const auto& pin : m_outputs) {
+    for (const auto& pin : outputs) {
         pin->draw(window);
     }
 }
@@ -24,20 +26,32 @@ sf::Vector2f Component::getPosition() const {
     return m_position;
 }
 
+sf::FloatRect Component::getBounds() const {
+    return sf::FloatRect(m_position, sf::Vector2f(60.f, 40.f));
+}
+
 const std::vector<std::unique_ptr<Pin>>& Component::getInputs() const {
-    return m_inputs;
+    return inputs;
 }
 
 const std::vector<std::unique_ptr<Pin>>& Component::getOutputs() const {
-    return m_outputs;
+    return outputs;
 }
 
 Pin* Component::addInput(sf::Vector2f relPos) {
-    m_inputs.push_back(std::make_unique<Pin>(this, PinType::Input, relPos));
-    return m_inputs.back().get();
+    inputs.push_back(std::make_unique<Pin>(this, PinType::Input, relPos));
+    return inputs.back().get();
 }
 
 Pin* Component::addOutput(sf::Vector2f relPos) {
-    m_outputs.push_back(std::make_unique<Pin>(this, PinType::Output, relPos));
-    return m_outputs.back().get();
+    outputs.push_back(std::make_unique<Pin>(this, PinType::Output, relPos));
+    return outputs.back().get();
+}
+
+std::string Component::GetLabel() {
+    return std::format("{} : Component", GetId());
+}
+
+int Component::GetId() {
+    return id;
 }

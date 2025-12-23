@@ -3,10 +3,9 @@ add_executable(imgui-sfml-example
   Core/Component.cpp
   Core/Pin.cpp
   Core/Wire.cpp
-  Core/Gates.cpp
-  Core/IOComponents.cpp
   Simulation/Circuit.cpp
-)
+ "Core/Components/Source/Button.cpp" "Core/Components/Include/Button.h" "Core/Components/Include/Gate.h"
+"Core/Components/Source/Gate.cpp" "Core/Components/Source/AndGate.cpp" "Core/Components/Include/AndGate.h" "Core/Components/Source/OrGate.cpp" "Core/Components/Include/OrGate.h")
 
 # Yep, that's it!
 target_link_libraries(imgui-sfml-example
