@@ -22,6 +22,8 @@ int main()
     bool simulationRunning = false;
     sf::Clock deltaClock;
     int numberInputs = 2;
+    window.requestFocus();
+    deltaClock.restart(); // Initialize clock before loop
 
     while (window.isOpen())
     {
@@ -42,6 +44,9 @@ int main()
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
+
+        if (numberInputs > 8) numberInputs = 8;
+        if (numberInputs < 1) numberInputs = 1;
 
         // UI
         ImGui::Begin("Component Picker");

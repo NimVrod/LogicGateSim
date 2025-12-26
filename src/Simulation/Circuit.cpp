@@ -81,7 +81,6 @@ Pin* Circuit::getPinAt(sf::Vector2f pos) {
     }
     return nullptr;
 }
-//TODO: Refactor this monstrous function
 void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
     switch (state_) {
         case circuitState::Idle:
@@ -102,6 +101,24 @@ void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window
                     for (auto & m_component : std::ranges::reverse_view(m_components)) {
                         Component* comp = m_component.get();
                         if (comp->getBounds().contains(worldPos)) {
+                            //TODO: Maybe wrap in a function? Add a isClickable() method to Component?
+                            //Check if the component is clickable (some components might not be)
+                            if (auto* button = dynamic_cast<Button*>(comp)) {
+                                // If it's a button, toggle its state only if clicking in center
+                                // Make sure that we are in the middle of button to allow dragging from edges
+                                sf::FloatRect bounds = button->getBounds();
+                                // Create a smaller inner rect (60% of size, centered)
+                                float margin = bounds.size.x * 0.2f;
+                                sf::FloatRect innerBounds(
+                                    sf::Vector2f(bounds.position.x + margin, bounds.position.y + margin),
+                                    sf::Vector2f(bounds.size.x - 2 * margin, bounds.size.y - 2 * margin)
+                                );
+                                if (innerBounds.contains(worldPos)) {
+                                    button->toggle();
+                                    return;
+                                }
+                                // Fall through to dragging if clicking on edges
+                            }
                             m_draggedComponent = comp;
                             m_dragOffset = worldPos - comp->getPosition();
                             state_ = circuitState::DraggingComponent;
@@ -111,6 +128,20 @@ void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window
                 }
                 else {
                     //TODO: Do something on right click?
+                    //Maybe delete the component?
+                }
+            }
+            else {
+                if (event.is<sf::Event::MouseMoved>()) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+                    for (auto & m_component : std::ranges::reverse_view(m_components)) {
+                        Component* comp = m_component.get();
+                        if (comp->getBounds().contains(worldPos)) {
+                            //Hovering over component
+                        }
+                    }
                 }
             }
             break;
@@ -143,7 +174,7 @@ void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window
                     if (Pin* targetPin = getPinAt(worldPos); targetPin && targetPin != m_selectedPin) {
                         addWire(m_selectedPin, targetPin);
                     }
-                    //TODO: Custom node
+                    //TODO: Custom nodes for wires
                     m_selectedPin = nullptr;
                     state_ = circuitState::Idle;
                 }
@@ -184,13 +215,11 @@ void Circuit::removeComponent(int id) {
             Component* compToRemove = m_components[i].get();
 
             // Remove wires connected to this component's pins
-            m_wires.erase(
-                std::remove_if(m_wires.begin(), m_wires.end(),
-                    [compToRemove](const std::unique_ptr<Wire>& wire) {
-                        return wire->getStartPin()->getParent() == compToRemove ||
-                               wire->getEndPin()->getParent() == compToRemove;
-                    }),
-                m_wires.end());
+            std::erase_if(m_wires,
+                          [compToRemove](const std::unique_ptr<Wire>& wire) {
+                              return wire->getStartPin()->getParent() == compToRemove ||
+                                     wire->getEndPin()->getParent() == compToRemove;
+                          });
 
             // Clear references if the component being removed is selected/dragged
             if (m_draggedComponent == compToRemove) {
