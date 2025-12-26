@@ -26,7 +26,7 @@ std::string NorGate::GetLabel() {
     return std::format("{} : NOR Gate", GetId());
 }
 
-void NorGate::draw(sf::RenderWindow& window) {
+void NorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     sf::ConvexShape shape;
     // Shrink shape slightly to fit bubble
     float w = 55.f; 
@@ -67,19 +67,19 @@ void NorGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(pos);
-    //shape.setFillColor(sf::Color(150, 150, 250));
+    shape.setFillColor(sf::Color::Transparent);
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
     // Bubble
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(pos.x + w, pos.y + h/2.f - bubbleRadius));
-    bubble.setFillColor(sf::Color::White);
-    bubble.setOutlineColor(sf::Color::Black);
+    bubble.setFillColor(sf::Color::Transparent);
+    bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     
     window.draw(shape);
     window.draw(bubble);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }

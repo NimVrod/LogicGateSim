@@ -20,6 +20,7 @@ int main()
 
     Circuit circuit;
     bool simulationRunning = false;
+    bool shouldDrawPins = false;
     sf::Clock deltaClock;
     int numberInputs = 2;
     window.requestFocus();
@@ -86,6 +87,7 @@ int main()
         if (ImGui::Button("Step")) {
             circuit.update();
         }
+        ImGui::Checkbox("Draw all pins", &shouldDrawPins);
         ImGui::End();
 
         ImGui::Begin("Component list");
@@ -109,7 +111,7 @@ int main()
 
         window.clear(sf::Color(20, 20, 20)); // Dark background
         
-        circuit.draw(window);
+        circuit.draw(window, shouldDrawPins);
         
         ImGui::SFML::Render(window);
         window.display();

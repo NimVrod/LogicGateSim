@@ -12,14 +12,14 @@ Button::Button(sf::Vector2f position, int output)
 	addOutput(sf::Vector2f(40.f, 20.f)); // Assuming button size 40x40
 }
 
-void Button::draw(sf::RenderWindow& window) {
+void Button::draw(sf::RenderWindow& window, bool shouldDrawPins) {
 	if (state)
 		body.setFillColor(sf::Color(0, 255, 0));
 	else
 		body.setFillColor(sf::Color(255, 0, 0));
 	body.setPosition(getPosition());
 	window.draw(body);
-	Component::draw(window);
+	Component::draw(window, shouldDrawPins);
 }
 
 void Button::calculate() {

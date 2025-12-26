@@ -29,7 +29,7 @@ std::string XnorGate::GetLabel() {
     return std::format("{} : XNOR Gate", GetId());
 }
 
-void XnorGate::draw(sf::RenderWindow& window) {
+void XnorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     sf::ConvexShape shape;
     
     float shift = 8.f; 
@@ -71,8 +71,8 @@ void XnorGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(shapePos);
-    shape.setFillColor(sf::Color(150, 150, 250));
-    shape.setOutlineColor(sf::Color::Black);
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
     window.draw(shape);
@@ -84,17 +84,17 @@ void XnorGate::draw(sf::RenderWindow& window) {
          float x = (1-t)*(1-t)*0 + 2*(1-t)*t*15.f + t*t*0;
          float y = (1-t)*(1-t)*h + 2*(1-t)*t*(h/2.f) + t*t*0; 
          extraCurve[i].position = pos + sf::Vector2f(x, y);
-         extraCurve[i].color = sf::Color::Black;
+         extraCurve[i].color = sf::Color::White;
     }
     window.draw(extraCurve);
     
     // Bubble
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(shapePos.x + w, shapePos.y + h/2.f - bubbleRadius));
-    bubble.setFillColor(sf::Color::White);
-    bubble.setOutlineColor(sf::Color::Black);
+    bubble.setFillColor(sf::Color::Transparent);
+    bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     window.draw(bubble);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }

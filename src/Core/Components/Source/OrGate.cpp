@@ -25,7 +25,7 @@ std::string OrGate::GetLabel() {
     return std::format("{} : OR Gate", GetId());
 }
 
-void OrGate::draw(sf::RenderWindow& window) {
+void OrGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     sf::ConvexShape shape;
     float w = 60.f;
     float h = body.getSize().y;
@@ -72,11 +72,11 @@ void OrGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(pos);
-    shape.setFillColor(sf::Color(150, 150, 250)); // Match shared color
-    shape.setOutlineColor(sf::Color::Black);
+    shape.setFillColor(sf::Color::Transparent); 
+    shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
     window.draw(shape);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }

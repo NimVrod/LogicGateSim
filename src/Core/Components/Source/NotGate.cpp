@@ -28,7 +28,7 @@ std::string NotGate::GetLabel() {
     return std::format("{} : NOT Gate", GetId());
 }
 
-void NotGate::draw(sf::RenderWindow& window) {
+void NotGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     // Draw Triangle
     sf::ConvexShape triangle;
     triangle.setPointCount(3);
@@ -44,20 +44,20 @@ void NotGate::draw(sf::RenderWindow& window) {
     triangle.setPoint(2, sf::Vector2f(w, h / 2.f));
     
     triangle.setPosition(pos);
-    triangle.setFillColor(sf::Color(200, 200, 200)); // Light Gray
-    triangle.setOutlineColor(sf::Color::Black);
+    triangle.setFillColor(sf::Color::Transparent); 
+    triangle.setOutlineColor(sf::Color::White);
     triangle.setOutlineThickness(2.f);
 
     // Draw Bubble
     float bubbleRadius = 5.f;
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(pos.x + w, pos.y + h/2.f - bubbleRadius));
-    bubble.setFillColor(sf::Color::White);
-    bubble.setOutlineColor(sf::Color::Black);
+    bubble.setFillColor(sf::Color::Transparent);
+    bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
 
     window.draw(triangle);
     window.draw(bubble);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }

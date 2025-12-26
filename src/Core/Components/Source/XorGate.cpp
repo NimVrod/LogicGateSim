@@ -29,7 +29,7 @@ std::string XorGate::GetLabel() {
     return std::format("{} : XOR Gate", GetId());
 }
 
-void XorGate::draw(sf::RenderWindow& window) {
+void XorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     // OR Shape shifted right + Extra curve line
     sf::ConvexShape shape;
     
@@ -73,8 +73,8 @@ void XorGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(shapePos);
-    shape.setFillColor(sf::Color(150, 150, 250));
-    shape.setOutlineColor(sf::Color::Black);
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
     window.draw(shape);
@@ -93,7 +93,7 @@ void XorGate::draw(sf::RenderWindow& window) {
          
          // We want this curve.
          extraCurve[i].position = pos + sf::Vector2f(x, y);
-         extraCurve[i].color = sf::Color::Black;
+         extraCurve[i].color = sf::Color::White;
     }
     
     // SFML LineStrip doesn't support thickness natively.
@@ -101,5 +101,5 @@ void XorGate::draw(sf::RenderWindow& window) {
     // For now simple line strip.
     window.draw(extraCurve);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }

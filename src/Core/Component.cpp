@@ -8,8 +8,14 @@ Component::Component(sf::Vector2f position)
 	id = nextId++;
 }
 
-void Component::draw(sf::RenderWindow& window) {
+void Component::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     // Base draw can handle pins
+    if (shouldDrawPins) {
+        drawPins(window);
+    }
+}
+
+void Component::drawPins(sf::RenderWindow &window) {
     for (const auto& pin : inputs) {
         pin->draw(window);
     }

@@ -27,7 +27,7 @@ std::string NandGate::GetLabel() {
     return std::format("{} : NAND Gate", GetId());
 }
 
-void NandGate::draw(sf::RenderWindow& window) {
+void NandGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     // Ideally share code with AndGate using a common helper or inheritance geometry
     // For now, duplicate standard AND shape logic and add bubble
     
@@ -74,8 +74,8 @@ void NandGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(pos);
-    shape.setFillColor(sf::Color(150, 150, 250)); 
-    shape.setOutlineColor(sf::Color::Black);
+    shape.setFillColor(sf::Color::Transparent); 
+    shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
     // Bubble
@@ -84,12 +84,12 @@ void NandGate::draw(sf::RenderWindow& window) {
     // Tip is at (shapeW, h/2) local
     // Bubble origin is top left
     bubble.setPosition(sf::Vector2f(pos.x + shapeW, pos.y + h/2.f - bubbleRadius));
-    bubble.setFillColor(sf::Color::White);
-    bubble.setOutlineColor(sf::Color::Black);
+    bubble.setFillColor(sf::Color::Transparent);
+    bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     
     window.draw(shape);
     window.draw(bubble);
     
-    Component::draw(window);
+    Component::draw(window, shouldDrawPins);
 }
