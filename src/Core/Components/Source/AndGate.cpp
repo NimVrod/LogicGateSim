@@ -25,7 +25,7 @@ std::string AndGate::GetLabel() {
 	return std::format("{} : AND Gate", GetId());
 }
 
-void AndGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void AndGate::draw(sf::RenderWindow& window) {
 	sf::ConvexShape shape;
 	
 	float w = 60.f;
@@ -93,6 +93,4 @@ void AndGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
 	shape.setOutlineThickness(2.f);
 	shape.setOutlineColor(sf::Color::White);
 	window.draw(shape);
-	
-	Component::draw(window, shouldDrawPins);
 }

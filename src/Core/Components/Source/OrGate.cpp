@@ -25,7 +25,7 @@ std::string OrGate::GetLabel() {
     return std::format("{} : OR Gate", GetId());
 }
 
-void OrGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void OrGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     float w = 60.f;
     float h = body.getSize().y;
@@ -77,6 +77,4 @@ void OrGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     shape.setOutlineThickness(2.f);
     
     window.draw(shape);
-    
-    Component::draw(window, shouldDrawPins);
 }

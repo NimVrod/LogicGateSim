@@ -17,7 +17,7 @@ public:
     virtual void calculate() = 0;
     virtual std::string GetLabel();
 	
-    virtual void draw(sf::RenderWindow& window, bool shouldDrawPins = false);
+    virtual void draw(sf::RenderWindow& window);
     virtual void drawPins(sf::RenderWindow& window);
     virtual sf::FloatRect getBounds() const;
 

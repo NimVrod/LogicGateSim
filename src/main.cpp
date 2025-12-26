@@ -111,7 +111,8 @@ int main()
 
         window.clear(sf::Color(20, 20, 20)); // Dark background
         
-        circuit.draw(window, shouldDrawPins);
+        circuit.setDrawAllPins(shouldDrawPins);
+        circuit.draw(window);
         
         ImGui::SFML::Render(window);
         window.display();

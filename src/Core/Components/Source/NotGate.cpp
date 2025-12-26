@@ -28,7 +28,7 @@ std::string NotGate::GetLabel() {
     return std::format("{} : NOT Gate", GetId());
 }
 
-void NotGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void NotGate::draw(sf::RenderWindow& window) {
     // Draw Triangle
     sf::ConvexShape triangle;
     triangle.setPointCount(3);
@@ -58,6 +58,4 @@ void NotGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
 
     window.draw(triangle);
     window.draw(bubble);
-    
-    Component::draw(window, shouldDrawPins);
 }

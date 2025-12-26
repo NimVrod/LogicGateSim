@@ -44,14 +44,17 @@ void Circuit::update() {
     }
 }
 
-void Circuit::draw(sf::RenderWindow& window, bool drawPins) {
+void Circuit::draw(sf::RenderWindow& window) {
     // Draw components first, then wires? Wires usually under components or over?
     // Wires usually under.
     for (auto& wire : m_wires) {
         wire->draw(window);
     }
     for (auto& comp : m_components) {
-        comp->draw(window, drawPins);
+        comp->draw(window);
+        if (m_drawAllPins) {
+            comp->drawPins(window);
+        }
     }
 
     if (m_hoveredComponent) {
@@ -68,6 +71,10 @@ void Circuit::draw(sf::RenderWindow& window, bool drawPins) {
         };
         window.draw(line, 2, sf::PrimitiveType::Lines);
     }
+}
+
+void Circuit::setDrawAllPins(bool draw) {
+    m_drawAllPins = draw;
 }
 
 Pin* Circuit::getPinAt(sf::Vector2f pos) {

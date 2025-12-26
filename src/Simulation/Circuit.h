@@ -20,7 +20,8 @@ public:
     void removeComponent(int id);
 
     void update();
-    void draw(sf::RenderWindow& window, bool drawPins = false);
+    void draw(sf::RenderWindow& window);
+    void setDrawAllPins(bool draw);
     void handleEvent(const sf::Event &event, sf::RenderWindow &window);
     circuitState getState() const;
 
@@ -34,6 +35,7 @@ private:
     sf::Vector2f m_dragOffset;
 
     Component* m_hoveredComponent = nullptr;
+    bool m_drawAllPins = false;
 
     Pin* getPinAt(sf::Vector2f pos);
 };

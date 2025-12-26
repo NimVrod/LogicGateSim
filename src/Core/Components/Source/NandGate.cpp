@@ -27,7 +27,7 @@ std::string NandGate::GetLabel() {
     return std::format("{} : NAND Gate", GetId());
 }
 
-void NandGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void NandGate::draw(sf::RenderWindow& window) {
     // Ideally share code with AndGate using a common helper or inheritance geometry
     // For now, duplicate standard AND shape logic and add bubble
     
@@ -90,6 +90,4 @@ void NandGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     
     window.draw(shape);
     window.draw(bubble);
-    
-    Component::draw(window, shouldDrawPins);
 }

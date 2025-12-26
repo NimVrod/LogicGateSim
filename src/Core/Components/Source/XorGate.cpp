@@ -29,7 +29,7 @@ std::string XorGate::GetLabel() {
     return std::format("{} : XOR Gate", GetId());
 }
 
-void XorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void XorGate::draw(sf::RenderWindow& window) {
     // OR Shape shifted right + Extra curve line
     sf::ConvexShape shape;
     
@@ -100,6 +100,4 @@ void XorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     // We can draw it multiple times or use a thin quad strip if needed.
     // For now simple line strip.
     window.draw(extraCurve);
-    
-    Component::draw(window, shouldDrawPins);
 }

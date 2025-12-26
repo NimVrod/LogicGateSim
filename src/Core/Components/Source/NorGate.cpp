@@ -26,7 +26,7 @@ std::string NorGate::GetLabel() {
     return std::format("{} : NOR Gate", GetId());
 }
 
-void NorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void NorGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     // Shrink shape slightly to fit bubble
     float w = 55.f; 
@@ -80,6 +80,4 @@ void NorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     
     window.draw(shape);
     window.draw(bubble);
-    
-    Component::draw(window, shouldDrawPins);
 }

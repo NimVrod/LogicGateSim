@@ -29,7 +29,7 @@ std::string XnorGate::GetLabel() {
     return std::format("{} : XNOR Gate", GetId());
 }
 
-void XnorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
+void XnorGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     
     float shift = 8.f; 
@@ -95,6 +95,4 @@ void XnorGate::draw(sf::RenderWindow& window, bool shouldDrawPins) {
     bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     window.draw(bubble);
-    
-    Component::draw(window, shouldDrawPins);
 }
