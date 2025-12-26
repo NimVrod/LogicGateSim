@@ -2,10 +2,15 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <ranges>
 #include <Core/Components/Include/Button.h>
 
 void Circuit::addComponent(std::unique_ptr<Component> component) {
     m_components.push_back(std::move(component));
+    m_draggedComponent = m_components.back().get();
+    m_dragOffset = sf::Vector2f(0.f, 0.f);
+    //TODO: Add snap to mouse world pos on start
+    state_ = circuitState::DraggingComponent;
 }
 
 void Circuit::addWire(Pin* start, Pin* end) {
@@ -78,89 +83,88 @@ Pin* Circuit::getPinAt(sf::Vector2f pos) {
 }
 //TODO: Refactor this monstrous function
 void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
-    if (event.is<sf::Event::MouseButtonPressed>()) {
-        const auto& mouseEvent = event.getIf<sf::Event::MouseButtonPressed>();
-        if (mouseEvent->button == sf::Mouse::Button::Left) {
-            sf::Vector2f worldPos = window.mapPixelToCoords(mouseEvent->position);
+    switch (state_) {
+        case circuitState::Idle:
+            if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-            // 1. Check Components first (backwards = topmost first)
-            for (auto it = m_components.rbegin(); it != m_components.rend(); ++it) {
-                auto& comp = *it;
-                if (!comp->getBounds().contains(worldPos)) continue;
-                
-                // Check if clicking on this component's own pin - allow wiring
-                Pin* ownPin = nullptr;
-                const float pinRadius = 10.f;
-                for (auto& pin : comp->getInputs()) {
-                    sf::Vector2f pinPos = pin->getPosition();
-                    float distSq = (worldPos.x - pinPos.x)*(worldPos.x - pinPos.x) + 
-                                   (worldPos.y - pinPos.y)*(worldPos.y - pinPos.y);
-                    if (distSq < pinRadius * pinRadius) { ownPin = pin.get(); break; }
-                }
-                if (!ownPin) {
-                    for (auto& pin : comp->getOutputs()) {
-                        sf::Vector2f pinPos = pin->getPosition();
-                        float distSq = (worldPos.x - pinPos.x)*(worldPos.x - pinPos.x) + 
-                                       (worldPos.y - pinPos.y)*(worldPos.y - pinPos.y);
-                        if (distSq < pinRadius * pinRadius) { ownPin = pin.get(); break; }
-                    }
-                }
-                
-                if (ownPin) {
-                    // Wire this pin
-                    if (m_selectedPin) {
-                        addWire(m_selectedPin, ownPin);
-                        m_selectedPin = nullptr;
-                    } else {
-                        m_selectedPin = ownPin;
-                    }
-                    return;
-                }
-                
-                // Button: toggle if clicking center, else drag
-                if (Button* button = dynamic_cast<Button*>(comp.get())) {
-                    sf::Vector2f pos = button->getPosition();
-                    sf::Vector2f size = button->getBounds().size;
-                    float m = 10.f;
-                    
-                    bool inCenter = worldPos.x > pos.x + m && worldPos.x < pos.x + size.x - m &&
-                                    worldPos.y > pos.y + m && worldPos.y < pos.y + size.y - m;
-                    if (inCenter) {
-                        button->toggle();
-                        m_selectedPin = nullptr;
+                    // Check for pin click first (for wire creation)
+                    //TODO: Somehow check if a component is over the pin to prevent accidental wire creation when dragging
+                    if (Pin* clickedPin = getPinAt(worldPos)) {
+                        m_selectedPin = clickedPin;
+                        state_ = circuitState::CreatingWire;
                         return;
                     }
+
+                    // Check for component click (for dragging) (start from end for topmost)
+                    for (auto & m_component : std::ranges::reverse_view(m_components)) {
+                        Component* comp = m_component.get();
+                        if (comp->getBounds().contains(worldPos)) {
+                            m_draggedComponent = comp;
+                            m_dragOffset = worldPos - comp->getPosition();
+                            state_ = circuitState::DraggingComponent;
+                            return;
+                        }
+                    }
                 }
-                
-                // Start dragging
-                m_draggedComponent = comp.get();
-                m_dragOffset = comp->getPosition() - worldPos;
-                m_selectedPin = nullptr;
-                return;
-            }
-            
-            // 2. Clicked on empty space - cancel wiring
-            m_selectedPin = nullptr;
-        }
-    } else if (event.is<sf::Event::MouseButtonReleased>()) {
-        if (m_draggedComponent) {
-            // Move dragged component to end so it's drawn on top
-            for (auto it = m_components.begin(); it != m_components.end(); ++it) {
-                if (it->get() == m_draggedComponent) {
-                    auto comp = std::move(*it);
-                    m_components.erase(it);
-                    m_components.push_back(std::move(comp));
-                    break;
+                else {
+                    //TODO: Do something on right click?
                 }
             }
-            m_draggedComponent = nullptr;
-        }
-    } else if (event.is<sf::Event::MouseMoved>()) {
-         if (m_draggedComponent) {
-             const auto& moveEvent = event.getIf<sf::Event::MouseMoved>();
-             sf::Vector2f worldPos = window.mapPixelToCoords(moveEvent->position);
-             m_draggedComponent->setPosition(worldPos + m_dragOffset);
-         }
+            break;
+        case circuitState::DraggingComponent:
+            if (event.is<sf::Event::MouseButtonReleased>() && m_draggedComponent) {
+                m_draggedComponent->setPosition(
+                    sf::Vector2f(
+                        sf::Mouse::getPosition(window).x - m_dragOffset.x,
+                        sf::Mouse::getPosition(window).y - m_dragOffset.y
+                    )
+                );
+                m_draggedComponent = nullptr;
+                state_ = circuitState::Idle;
+            }
+            else {
+                if (m_draggedComponent) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+                    m_draggedComponent->setPosition(worldPos - m_dragOffset);
+                    //TODO: Maybe make it a more transparent?
+                }
+            }
+            break;
+        case circuitState::CreatingWire:
+            if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+
+                    if (Pin* targetPin = getPinAt(worldPos); targetPin && targetPin != m_selectedPin) {
+                        addWire(m_selectedPin, targetPin);
+                    }
+                    //TODO: Custom node
+                    m_selectedPin = nullptr;
+                    state_ = circuitState::Idle;
+                }
+                else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
+                    // Cancel wire creation
+                    m_selectedPin = nullptr;
+                    state_ = circuitState::Idle;
+                }
+            }
+            else if (event.is<sf::Event::MouseButtonReleased>()) {
+                //Draw line to mouse pos
+                auto start = m_selectedPin->getPosition();
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
+                sf::Vertex line[] = {
+                    sf::Vertex{start, sf::Color::Yellow},
+                    sf::Vertex{worldPos, sf::Color::Yellow}
+                };
+
+            }
+            break;
     }
 }
 
