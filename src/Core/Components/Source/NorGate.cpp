@@ -1,14 +1,15 @@
-#include "../Include/OrGate.h"
+#include "../Include/NorGate.h"
 #include <SFML/Graphics/ConvexShape.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <cmath>
 
-OrGate::OrGate(sf::Vector2f position, int numInputs)
+NorGate::NorGate(sf::Vector2f position, int numInputs)
     : Gate(position, numInputs)
 {
     body.setFillColor(sf::Color::Transparent);
 }
 
-void OrGate::calculate() {
+void NorGate::calculate() {
     bool result = false;
     for (const auto& input : inputs) {
         if (input->getValue() == 1) {
@@ -17,27 +18,23 @@ void OrGate::calculate() {
         }
     }
     for (const auto& output : outputs) {
-        output->setValue(result ? 1 : 0);
+        output->setValue(result ? 0 : 1);
     }
 }
 
-std::string OrGate::GetLabel() {
-    return std::format("{} : OR Gate", GetId());
+std::string NorGate::GetLabel() {
+    return std::format("{} : NOR Gate", GetId());
 }
 
-void OrGate::draw(sf::RenderWindow& window) {
+void NorGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
-    float w = 60.f;
+    // Shrink shape slightly to fit bubble
+    float w = 55.f; 
     float h = body.getSize().y;
     sf::Vector2f pos = getPosition();
+    float bubbleRadius = 5.f;
 
     std::vector<sf::Vector2f> points;
-    
-    // Top Curve: (0,0) to (w, h/2)
-    // Control point roughly (w/2, 0)
-    // Quadratic Bezier: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
-    // P0=(0,0), P1=(30, 0), P2=(60, h/2)
-    
     int segments = 20;
     
     // Top Edge
@@ -48,8 +45,7 @@ void OrGate::draw(sf::RenderWindow& window) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Bottom Edge: (w, h/2) to (0, h)
-    // P0=(60, h/2), P1=(30, h), P2=(0, h)
+    // Bottom Edge
     for (int i = 1; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*w + 2*(1-t)*t*(w*0.6f) + t*t*0;
@@ -57,9 +53,8 @@ void OrGate::draw(sf::RenderWindow& window) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Back Curve: (0, h) to (0, 0) (Concave)
-    // P0=(0, h), P1=(15, h/2), P2=(0, 0)
-    for (int i = 1; i < segments; ++i) { // Skip last point (0,0) as it loops to first
+    // Back Curve
+    for (int i = 1; i < segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*15.f + t*t*0;
         float y = (1-t)*(1-t)*h + 2*(1-t)*t*(h/2.f) + t*t*0;
@@ -72,11 +67,19 @@ void OrGate::draw(sf::RenderWindow& window) {
     }
     
     shape.setPosition(pos);
-    shape.setFillColor(sf::Color(150, 150, 250)); // Match shared color
-    shape.setOutlineColor(sf::Color::Black);
+    //shape.setFillColor(sf::Color(150, 150, 250));
+    shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
+    // Bubble
+    sf::CircleShape bubble(bubbleRadius);
+    bubble.setPosition(sf::Vector2f(pos.x + w, pos.y + h/2.f - bubbleRadius));
+    bubble.setFillColor(sf::Color::White);
+    bubble.setOutlineColor(sf::Color::Black);
+    bubble.setOutlineThickness(2.f);
+    
     window.draw(shape);
+    window.draw(bubble);
     
     Component::draw(window);
 }

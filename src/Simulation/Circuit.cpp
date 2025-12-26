@@ -26,6 +26,7 @@ void Circuit::clear() {
     m_components.clear();
     m_selectedPin = nullptr;
     m_draggedComponent = nullptr;
+    state_ = circuitState::Idle;
 }
 
 void Circuit::update() {
@@ -161,6 +162,10 @@ void Circuit::handleEvent(const sf::Event& event, const sf::RenderWindow& window
              m_draggedComponent->setPosition(worldPos + m_dragOffset);
          }
     }
+}
+
+circuitState Circuit::getState() const {
+    return state_;
 }
 
 const std::vector<std::unique_ptr<Component>>& Circuit::GetComponents() const {

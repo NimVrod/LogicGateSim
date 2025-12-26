@@ -23,6 +23,10 @@ sf::Vector2f Pin::getPosition() const {
     return parent->getPosition() + relativePosition;
 }
 
+void Pin::setRelativePosition(sf::Vector2f relativePosition) {
+    this->relativePosition = relativePosition;
+}
+
 Component* Pin::getParent() const {
     return parent;
 }

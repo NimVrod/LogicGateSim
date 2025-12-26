@@ -19,6 +19,7 @@ public:
     PinType getType() const;
 
     sf::Vector2f getPosition() const;
+    void setRelativePosition(sf::Vector2f relativePosition);
     Component* getParent() const;
 
     void draw(sf::RenderWindow& window);

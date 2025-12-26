@@ -5,6 +5,11 @@
 #include "Core/Components/Include/Button.h"
 #include "Core/Components/Include/AndGate.h"
 #include "Core/Components/Include/OrGate.h"
+#include "Core/Components/Include/NotGate.h"
+#include "Core/Components/Include/NandGate.h"
+#include "Core/Components/Include/NorGate.h"
+#include "Core/Components/Include/XorGate.h"
+#include "Core/Components/Include/XnorGate.h"
 
 int main()
 {
@@ -48,6 +53,21 @@ int main()
 		}
 		if (ImGui::Button("Add OR gate")) {
             circuit.addComponent(std::make_unique<OrGate>(sf::Vector2f(100, 100), numberInputs));
+        }
+        if (ImGui::Button("Add NOT gate")) {
+            circuit.addComponent(std::make_unique<NotGate>(sf::Vector2f(100, 100)));
+        }
+        if (ImGui::Button("Add NAND gate")) {
+            circuit.addComponent(std::make_unique<NandGate>(sf::Vector2f(100, 100), numberInputs));
+        }
+        if (ImGui::Button("Add NOR gate")) {
+            circuit.addComponent(std::make_unique<NorGate>(sf::Vector2f(100, 100), numberInputs));
+        }
+        if (ImGui::Button("Add XOR gate")) {
+            circuit.addComponent(std::make_unique<XorGate>(sf::Vector2f(100, 100), numberInputs));
+        }
+        if (ImGui::Button("Add XNOR gate")) {
+            circuit.addComponent(std::make_unique<XnorGate>(sf::Vector2f(100, 100), numberInputs));
         }
         ImGui::InputInt("Number of gates", &numberInputs);
         ImGui::Separator();

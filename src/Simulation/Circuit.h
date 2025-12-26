@@ -6,6 +6,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
+enum class circuitState {
+    Idle,
+    DraggingComponent,
+    CreatingWire
+};
 class Circuit {
 public:
     void addComponent(std::unique_ptr<Component> component);
@@ -17,6 +22,7 @@ public:
     void update();
     void draw(sf::RenderWindow& window);
     void handleEvent(const sf::Event& event, const sf::RenderWindow& window);
+    circuitState getState() const;
 
 private:
     std::vector<std::unique_ptr<Component>> m_components;
@@ -24,7 +30,9 @@ private:
 
     Pin* m_selectedPin = nullptr; // For creating wires
     Component* m_draggedComponent = nullptr;
+    circuitState state_ = circuitState::Idle;
     sf::Vector2f m_dragOffset;
 
     Pin* getPinAt(sf::Vector2f pos);
 };
+
