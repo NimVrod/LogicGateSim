@@ -207,6 +207,17 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
     }
 }
 
+void Circuit::GotoComponent(int id, sf::RenderWindow &window) {
+    for (auto& comp : components) {
+        if (comp->GetId() == id) {
+            sf::Vector2f compPos = comp->getPosition();
+            sf::Mouse::setPosition(sf::Vector2i(static_cast<int>(compPos.x), static_cast<int>(compPos.y)), window);
+            hoveredComponent = comp.get();
+            break;
+        }
+    }
+}
+
 circuitState Circuit::getState() const {
     return state;
 }

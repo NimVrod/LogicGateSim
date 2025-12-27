@@ -23,6 +23,7 @@ public:
     void setDrawAllPins(bool draw);
     void setDrawLabels(bool draw);
     void handleEvent(const sf::Event &event, sf::RenderWindow &window);
+    void GotoComponent(int id, sf::RenderWindow& window);
     circuitState getState() const;
 
 private:

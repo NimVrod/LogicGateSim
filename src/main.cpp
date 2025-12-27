@@ -105,6 +105,10 @@ int main()
             if (ImGui::Button("Delete")) {
                 circuit.removeComponent(components[i]->GetId());
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Go to")) {
+                circuit.GotoComponent(components[i]->GetId(), window);
+            }
             ImGui::PopID();
         }
 
