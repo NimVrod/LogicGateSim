@@ -30,7 +30,7 @@ void Button::drawLabel(sf::RenderWindow &window) {
 	text.setString(GetLabel());
 	text.setCharacterSize(14);
 	text.setFillColor(sf::Color::White);
-	text.setPosition(sf::Vector2f(m_position.x, m_position.y + body.getSize().y + 5.f));
+	text.setPosition(sf::Vector2f(position.x, position.y + body.getSize().y + 5.f));
 	window.draw(text);
 }
 
@@ -53,5 +53,5 @@ std::string Button::GetLabel() {
 }
 
 sf::FloatRect Button::getBounds() const {
-	return sf::FloatRect(m_position, body.getSize());
+	return sf::FloatRect(position, body.getSize());
 }

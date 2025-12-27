@@ -9,10 +9,10 @@ public:
     void update();
     void draw(sf::RenderWindow& window);
 
-    Pin* getStartPin() const { return m_start; }
-    Pin* getEndPin() const { return m_end; }
+    Pin* getStartPin() const { return start; }
+    Pin* getEndPin() const { return end; }
 
 private:
-    Pin* m_start;
-    Pin* m_end;
+    Pin* start;
+    Pin* end;
 };

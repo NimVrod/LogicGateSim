@@ -26,18 +26,17 @@ public:
     circuitState getState() const;
 
 private:
-    std::vector<std::unique_ptr<Component>> m_components;
-    std::vector<std::unique_ptr<Wire>> m_wires;
+    std::vector<std::unique_ptr<Component>> components;
+    std::vector<std::unique_ptr<Wire>> wires;
 
-    Pin* m_selectedPin = nullptr; // For creating wires
-    Component* m_draggedComponent = nullptr;
-    circuitState state_ = circuitState::Idle;
-    sf::Vector2f m_dragOffset;
+    Pin* selectedPin = nullptr; // For creating wires
+    Component* draggedComponent = nullptr;
+    circuitState state = circuitState::Idle;
+    sf::Vector2f dragOffset;
 
-    Component* m_hoveredComponent = nullptr;
-    bool m_drawAllPins = false;
+    Component* hoveredComponent = nullptr;
+    bool drawAllPins = false;
     bool drawLabels = false;
 
     Pin* getPinAt(sf::Vector2f pos);
 };
-

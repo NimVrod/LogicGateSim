@@ -31,7 +31,7 @@ public:
     int GetId();
 
 protected:
-    sf::Vector2f m_position;
+    sf::Vector2f position;
     std::vector<std::unique_ptr<Pin>> inputs;
     std::vector<std::unique_ptr<Pin>> outputs;
 

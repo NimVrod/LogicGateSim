@@ -10,8 +10,8 @@
 class ResourceManager {
 private:
     ResourceManager() = default;
-    std::unordered_map<std::string, sf::Texture> textures_;
-    std::unordered_map<std::string, sf::Font> fonts_;
+    std::unordered_map<std::string, sf::Texture> textures;
+    std::unordered_map<std::string, sf::Font> fonts;
 public:
     static ResourceManager& getInstance();
     sf::Texture& getTexture(const std::string& filename);

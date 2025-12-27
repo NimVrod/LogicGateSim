@@ -3,10 +3,10 @@
 #include "ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
-int Component::nextId = 0;
+int Component::nextId = 1;
 
 Component::Component(sf::Vector2f position)
-    : m_position(position)
+    : position(position)
 {
 	id = nextId++;
 }
@@ -31,20 +31,20 @@ void Component::drawLabel(sf::RenderWindow &window) {
     text.setString(GetLabel());
     text.setCharacterSize(14);
     text.setFillColor(sf::Color::White);
-    text.setPosition(sf::Vector2f( m_position.x, m_position.y + getInputs().size() * 20.f + 20.f ));
+    text.setPosition(sf::Vector2f( position.x, position.y + getInputs().size() * 20.f + 20.f ));
     window.draw(text);
 }
 
 void Component::setPosition(sf::Vector2f pos) {
-    m_position = pos;
+    position = pos;
 }
 
 sf::Vector2f Component::getPosition() const {
-    return m_position;
+    return position;
 }
 
 sf::FloatRect Component::getBounds() const {
-    return sf::FloatRect(m_position, sf::Vector2f(60.f, 40.f));
+    return sf::FloatRect(position, sf::Vector2f(60.f, 40.f));
 }
 
 const std::vector<std::unique_ptr<Pin>>& Component::getInputs() const {

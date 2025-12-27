@@ -9,14 +9,14 @@ ResourceManager& ResourceManager::getInstance() {
 }
 
 sf::Texture& ResourceManager::getTexture(const std::string& filename) {
-    auto it = textures_.find(filename);
-    if (it != textures_.end()) {
+    auto it = textures.find(filename);
+    if (it != textures.end()) {
         return it->second;
     } else {
         sf::Texture texture;
         if (texture.loadFromFile(filename)) {
-            textures_[filename] = texture;
-            return textures_[filename];
+            textures[filename] = texture;
+            return textures[filename];
         } else {
             throw std::runtime_error("Failed to load texture: " + filename);
         }
@@ -24,14 +24,14 @@ sf::Texture& ResourceManager::getTexture(const std::string& filename) {
 }
 
 sf::Font& ResourceManager::getFont(const std::string& filename) {
-    auto it = fonts_.find(filename);
-    if (it != fonts_.end()) {
+    auto it = fonts.find(filename);
+    if (it != fonts.end()) {
         return it->second;
     } else {
         sf::Font font;
         if (font.openFromFile(filename)) {
-            fonts_[filename] = font;
-            return fonts_[filename];
+            fonts[filename] = font;
+            return fonts[filename];
         } else {
             throw std::runtime_error("Failed to load font: " + filename);
         }

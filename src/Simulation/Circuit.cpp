@@ -6,11 +6,11 @@
 #include <Core/Components/Include/Button.h>
 
 void Circuit::addComponent(std::unique_ptr<Component> component) {
-    m_components.push_back(std::move(component));
-    m_draggedComponent = m_components.back().get();
-    m_dragOffset = sf::Vector2f(0.f, 0.f);
+    components.push_back(std::move(component));
+    draggedComponent = components.back().get();
+    dragOffset = sf::Vector2f(0.f, 0.f);
     //TODO: Add snap to mouse world pos on start
-    state_ = circuitState::DraggingComponent;
+    state = circuitState::DraggingComponent;
 }
 
 void Circuit::addWire(Pin* start, Pin* end) {
@@ -21,25 +21,25 @@ void Circuit::addWire(Pin* start, Pin* end) {
         }
         
         if (start->getType() == PinType::Output && end->getType() == PinType::Input) {
-             m_wires.push_back(std::make_unique<Wire>(start, end));
+             wires.push_back(std::make_unique<Wire>(start, end));
         }
     }
 }
 
 void Circuit::clear() {
-    m_wires.clear();
-    m_components.clear();
-    m_selectedPin = nullptr;
-    m_draggedComponent = nullptr;
-    m_hoveredComponent = nullptr;
-    state_ = circuitState::Idle;
+    wires.clear();
+    components.clear();
+    selectedPin = nullptr;
+    draggedComponent = nullptr;
+    hoveredComponent = nullptr;
+    state = circuitState::Idle;
 }
 
 void Circuit::update() {
-    for (auto& wire : m_wires) {
+    for (auto& wire : wires) {
         wire->update();
     }
-    for (auto& comp : m_components) {
+    for (auto& comp : components) {
         comp->calculate();
     }
 }
@@ -47,28 +47,28 @@ void Circuit::update() {
 void Circuit::draw(sf::RenderWindow& window) {
     // Draw components first, then wires? Wires usually under components or over?
     // Wires usually under.
-    for (auto& wire : m_wires) {
+    for (auto& wire : wires) {
         wire->draw(window);
     }
-    for (auto& comp : m_components) {
+    for (auto& comp : components) {
         comp->draw(window);
-        if (m_drawAllPins)
+        if (drawAllPins)
             comp->drawPins(window);
         if (drawLabels)
             comp->drawLabel(window);
     }
 
-    if (m_hoveredComponent) {
-        m_hoveredComponent->drawPins(window);
-        m_hoveredComponent->drawLabel(window);
+    if (hoveredComponent) {
+        hoveredComponent->drawPins(window);
+        hoveredComponent->drawLabel(window);
     }
 
-    if (m_selectedPin) {
+    if (selectedPin) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
         
         sf::Vertex line[] = {
-            sf::Vertex{m_selectedPin->getPosition(), sf::Color::Yellow},
+            sf::Vertex{selectedPin->getPosition(), sf::Color::Yellow},
             sf::Vertex{worldPos, sf::Color::Yellow}
         };
         window.draw(line, 2, sf::PrimitiveType::Lines);
@@ -76,7 +76,7 @@ void Circuit::draw(sf::RenderWindow& window) {
 }
 
 void Circuit::setDrawAllPins(bool draw) {
-    m_drawAllPins = draw;
+    drawAllPins = draw;
 }
 
 void Circuit::setDrawLabels(bool draw) {
@@ -85,7 +85,7 @@ void Circuit::setDrawLabels(bool draw) {
 
 Pin* Circuit::getPinAt(sf::Vector2f pos) {
     const float radius = 10.f; // Tolerance
-    for (auto& comp : m_components) {
+    for (auto& comp : components) {
         for (auto& pin : comp->getInputs()) {
             sf::Vector2f pinPos = pin->getPosition();
             float distSq = (pos.x - pinPos.x)*(pos.x - pinPos.x) + (pos.y - pinPos.y)*(pos.y - pinPos.y);
@@ -106,20 +106,20 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
     // Handle MouseMoved events - hover detection works in all states
     if (event.is<sf::Event::MouseMoved>()) {
-        m_hoveredComponent = nullptr;
-        for (auto & m_component : std::ranges::reverse_view(m_components)) {
-            Component* comp = m_component.get();
+        hoveredComponent = nullptr;
+        for (auto & component : std::ranges::reverse_view(components)) {
+            Component* comp = component.get();
             if (comp->getBounds().contains(worldPos)) {
-                m_hoveredComponent = comp;
+                hoveredComponent = comp;
                 break;
             }
         }
 
         // State-specific mouse move handling
-        switch (state_) {
+        switch (state) {
             case circuitState::DraggingComponent:
-                if (m_draggedComponent) {
-                    m_draggedComponent->setPosition(worldPos - m_dragOffset);
+                if (draggedComponent) {
+                    draggedComponent->setPosition(worldPos - dragOffset);
                 }
                 break;
             default:
@@ -130,19 +130,19 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
     // Handle MouseButtonPressed events
     if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
-        switch (state_) {
+        switch (state) {
             case circuitState::Idle:
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
                     // Check for pin click first (for wire creation)
                     if (Pin* clickedPin = getPinAt(worldPos)) {
-                        m_selectedPin = clickedPin;
-                        state_ = circuitState::CreatingWire;
+                        selectedPin = clickedPin;
+                        state = circuitState::CreatingWire;
                         return;
                     }
 
                     // Check for component click (for dragging) (start from end for topmost)
-                    for (auto & m_component : std::ranges::reverse_view(m_components)) {
-                        Component* comp = m_component.get();
+                    for (auto & component : std::ranges::reverse_view(components)) {
+                        Component* comp = component.get();
                         if (comp->getBounds().contains(worldPos)) {
                             // Check if the component is clickable (some components might not be)
                             if (auto* button = dynamic_cast<Button*>(comp)) {
@@ -160,9 +160,9 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                                 }
                                 // Fall through to dragging if clicking on edges
                             }
-                            m_draggedComponent = comp;
-                            m_dragOffset = worldPos - comp->getPosition();
-                            state_ = circuitState::DraggingComponent;
+                            draggedComponent = comp;
+                            dragOffset = worldPos - comp->getPosition();
+                            state = circuitState::DraggingComponent;
                             return;
                         }
                     }
@@ -171,16 +171,16 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
             case circuitState::CreatingWire:
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                    if (Pin* targetPin = getPinAt(worldPos); targetPin && targetPin != m_selectedPin) {
-                        addWire(m_selectedPin, targetPin);
+                    if (Pin* targetPin = getPinAt(worldPos); targetPin && targetPin != selectedPin) {
+                        addWire(selectedPin, targetPin);
                     }
-                    m_selectedPin = nullptr;
-                    state_ = circuitState::Idle;
+                    selectedPin = nullptr;
+                    state = circuitState::Idle;
                 }
                 else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
                     // Cancel wire creation
-                    m_selectedPin = nullptr;
-                    state_ = circuitState::Idle;
+                    selectedPin = nullptr;
+                    state = circuitState::Idle;
                 }
                 break;
 
@@ -192,12 +192,12 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
     // Handle MouseButtonReleased events
     if (event.is<sf::Event::MouseButtonReleased>()) {
-        switch (state_) {
+        switch (state) {
             case circuitState::DraggingComponent:
-                if (m_draggedComponent) {
-                    m_draggedComponent->setPosition(worldPos - m_dragOffset);
-                    m_draggedComponent = nullptr;
-                    state_ = circuitState::Idle;
+                if (draggedComponent) {
+                    draggedComponent->setPosition(worldPos - dragOffset);
+                    draggedComponent = nullptr;
+                    state = circuitState::Idle;
                 }
                 break;
             default:
@@ -208,43 +208,43 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 }
 
 circuitState Circuit::getState() const {
-    return state_;
+    return state;
 }
 
 const std::vector<std::unique_ptr<Component>>& Circuit::GetComponents() const {
-    return m_components;
+    return components;
 }
 
 void Circuit::removeComponent(int id) {
-    for (size_t i = 0; i < m_components.size(); i++)
+    for (size_t i = 0; i < components.size(); i++)
     {
-        if (m_components[i]->GetId() == id)
+        if (components[i]->GetId() == id)
         {
-            Component* compToRemove = m_components[i].get();
+            Component* compToRemove = components[i].get();
 
             // Remove wires connected to this component's pins
-            std::erase_if(m_wires,
+            std::erase_if(wires,
                           [compToRemove](const std::unique_ptr<Wire>& wire) {
                               return wire->getStartPin()->getParent() == compToRemove ||
                                      wire->getEndPin()->getParent() == compToRemove;
                           });
 
             // Clear references if the component being removed is selected/dragged
-            if (m_draggedComponent == compToRemove) {
-                m_draggedComponent = nullptr;
+            if (draggedComponent == compToRemove) {
+                draggedComponent = nullptr;
             }
-            if (m_selectedPin && m_selectedPin->getParent() == compToRemove) {
-                m_selectedPin = nullptr;
+            if (selectedPin && selectedPin->getParent() == compToRemove) {
+                selectedPin = nullptr;
             }
-            if (m_hoveredComponent == compToRemove) {
-                m_hoveredComponent = nullptr;
+            if (hoveredComponent == compToRemove) {
+                hoveredComponent = nullptr;
             }
 
             // Swap-and-pop removal
-            if (i != m_components.size() - 1) {
-                m_components[i] = std::move(m_components.back());
+            if (i != components.size() - 1) {
+                components[i] = std::move(components.back());
             }
-            m_components.pop_back();
+            components.pop_back();
             break;
 		}
     }
