@@ -52,13 +52,15 @@ void Circuit::draw(sf::RenderWindow& window) {
     }
     for (auto& comp : m_components) {
         comp->draw(window);
-        if (m_drawAllPins) {
+        if (m_drawAllPins)
             comp->drawPins(window);
-        }
+        if (drawLabels)
+            comp->drawLabel(window);
     }
 
     if (m_hoveredComponent) {
         m_hoveredComponent->drawPins(window);
+        m_hoveredComponent->drawLabel(window);
     }
 
     if (m_selectedPin) {
@@ -75,6 +77,10 @@ void Circuit::draw(sf::RenderWindow& window) {
 
 void Circuit::setDrawAllPins(bool draw) {
     m_drawAllPins = draw;
+}
+
+void Circuit::setDrawLabels(bool draw) {
+    drawLabels = draw;
 }
 
 Pin* Circuit::getPinAt(sf::Vector2f pos) {

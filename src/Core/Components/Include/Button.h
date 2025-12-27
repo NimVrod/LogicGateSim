@@ -11,6 +11,7 @@ class Button : public Component {
 	void calculate() override;
 	std::string GetLabel() override;
 	void draw(sf::RenderWindow& window) override;
+	void drawLabel(sf::RenderWindow &window) override;
 	sf::FloatRect getBounds() const override;
 	void toggle();
 protected:

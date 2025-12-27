@@ -4,7 +4,6 @@
 #include "../Core/Component.h"
 #include "../Core/Wire.h"
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Event.hpp>
 
 enum class circuitState {
     Idle,
@@ -22,6 +21,7 @@ public:
     void update();
     void draw(sf::RenderWindow& window);
     void setDrawAllPins(bool draw);
+    void setDrawLabels(bool draw);
     void handleEvent(const sf::Event &event, sf::RenderWindow &window);
     circuitState getState() const;
 
@@ -36,6 +36,7 @@ private:
 
     Component* m_hoveredComponent = nullptr;
     bool m_drawAllPins = false;
+    bool drawLabels = false;
 
     Pin* getPinAt(sf::Vector2f pos);
 };

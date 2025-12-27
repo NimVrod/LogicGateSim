@@ -1,6 +1,8 @@
 ﻿#include "imgui.h"
 #include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
+
+#include "Core/ResourceManager.h"
 #include "Simulation/Circuit.h"
 #include "Core/Components/Include/Button.h"
 #include "Core/Components/Include/AndGate.h"
@@ -21,10 +23,12 @@ int main()
     Circuit circuit;
     bool simulationRunning = false;
     bool shouldDrawPins = false;
+    bool shouldDrawLabels = false;
     sf::Clock deltaClock;
     int numberInputs = 2;
     window.requestFocus();
     deltaClock.restart(); // Initialize clock before loop
+    ResourceManager &resourceManager = ResourceManager::getInstance();
 
     while (window.isOpen())
     {
@@ -88,6 +92,7 @@ int main()
             circuit.update();
         }
         ImGui::Checkbox("Draw all pins", &shouldDrawPins);
+        ImGui::Checkbox("Draw all labels", &shouldDrawLabels);
         ImGui::End();
 
         ImGui::Begin("Component list");
@@ -112,6 +117,7 @@ int main()
         window.clear(sf::Color(20, 20, 20)); // Dark background
         
         circuit.setDrawAllPins(shouldDrawPins);
+        circuit.setDrawLabels(shouldDrawLabels);
         circuit.draw(window);
         
         ImGui::SFML::Render(window);

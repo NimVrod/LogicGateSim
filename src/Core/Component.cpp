@@ -1,5 +1,8 @@
 #include "Component.h"
 
+#include "ResourceManager.h"
+#include "SFML/Graphics/Text.hpp"
+
 int Component::nextId = 0;
 
 Component::Component(sf::Vector2f position)
@@ -19,6 +22,17 @@ void Component::drawPins(sf::RenderWindow &window) {
     for (const auto& pin : outputs) {
         pin->draw(window);
     }
+}
+
+void Component::drawLabel(sf::RenderWindow &window) {
+    ResourceManager& rm = ResourceManager::getInstance();
+    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Text text(font);
+    text.setString(GetLabel());
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(sf::Vector2f( m_position.x, m_position.y + getInputs().size() * 20.f + 20.f ));
+    window.draw(text);
 }
 
 void Component::setPosition(sf::Vector2f pos) {

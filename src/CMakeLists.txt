@@ -11,7 +11,9 @@ add_executable(imgui-sfml-example
   "Core/Components/Source/NorGate.cpp" "Core/Components/Include/NorGate.h"
   "Core/Components/Source/XorGate.cpp" "Core/Components/Include/XorGate.h"
   "Core/Components/Source/XnorGate.cpp" "Core/Components/Include/XnorGate.h"
-        Simulation/Circuit.cpp)
+        Simulation/Circuit.cpp
+        Core/ResourceManager.cpp
+        Core/ResourceManager.h)
 
 # Yep, that's it!
 target_link_libraries(imgui-sfml-example
@@ -24,5 +26,9 @@ target_include_directories(imgui-sfml-example
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_custom_command(TARGET imgui-sfml-example POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets
+    $<TARGET_FILE_DIR:imgui-sfml-example>/assets)
 
 include(Install.cmake)

@@ -1,6 +1,8 @@
 #include "../Include/Button.h"
 #include <format>
 
+#include "Core/ResourceManager.h"
+
 Button::Button(sf::Vector2f position, int output)
 	: Component(position)
 {
@@ -19,6 +21,17 @@ void Button::draw(sf::RenderWindow& window) {
 		body.setFillColor(sf::Color(255, 0, 0));
 	body.setPosition(getPosition());
 	window.draw(body);
+}
+
+void Button::drawLabel(sf::RenderWindow &window) {
+	ResourceManager& rm = ResourceManager::getInstance();
+	sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+	sf::Text text(font);
+	text.setString(GetLabel());
+	text.setCharacterSize(14);
+	text.setFillColor(sf::Color::White);
+	text.setPosition(sf::Vector2f(m_position.x, m_position.y + body.getSize().y + 5.f));
+	window.draw(text);
 }
 
 void Button::calculate() {

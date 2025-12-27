@@ -19,6 +19,7 @@ public:
 	
     virtual void draw(sf::RenderWindow& window);
     virtual void drawPins(sf::RenderWindow& window);
+    virtual void drawLabel(sf::RenderWindow& window);
     virtual sf::FloatRect getBounds() const;
 
     void setPosition(sf::Vector2f pos);
