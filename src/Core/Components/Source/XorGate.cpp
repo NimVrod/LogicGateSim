@@ -4,7 +4,7 @@
 #include <cmath>
 
 XorGate::XorGate(sf::Vector2f position, int numInputs)
-    : Gate(position, numInputs)
+    : Gate(position, 2)
 {
     body.setFillColor(sf::Color::Transparent);
 }

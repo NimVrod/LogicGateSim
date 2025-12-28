@@ -15,7 +15,7 @@ NotGate::NotGate(sf::Vector2f position)
         inputs[0]->setRelativePosition(sf::Vector2f(0.f, 20.f));
     }
     if (!outputs.empty()) {
-        outputs[0]->setRelativePosition(sf::Vector2f(60.f, 20.f));
+        outputs[0]->setRelativePosition(sf::Vector2f(40.f, 20.f));
     }
 }
 

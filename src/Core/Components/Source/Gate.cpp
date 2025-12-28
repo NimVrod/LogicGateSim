@@ -35,5 +35,5 @@ std::string Gate::GetLabel() {
 }
 
 sf::FloatRect Gate::getBounds() const {
-	return sf::FloatRect(position, body.getSize());
+	return {position, body.getSize()};
 }

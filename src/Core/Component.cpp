@@ -31,7 +31,8 @@ void Component::drawLabel(sf::RenderWindow &window) {
     text.setString(GetLabel());
     text.setCharacterSize(14);
     text.setFillColor(sf::Color::White);
-    text.setPosition(sf::Vector2f( position.x, position.y + getInputs().size() * 20.f + 20.f ));
+    auto longer = std::max(getInputs().size(), getOutputs().size());
+    text.setPosition(sf::Vector2f(position.x - 10.f, position.y + longer * 20.f + 10.f ));
     window.draw(text);
 }
 

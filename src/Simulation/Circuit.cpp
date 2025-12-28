@@ -64,6 +64,7 @@ void Circuit::draw(sf::RenderWindow& window) {
     }
 
     if (selectedPin) {
+        selectedPin->draw(window);
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
         

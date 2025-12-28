@@ -15,7 +15,10 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Gate Simulator");
+    sf::ContextSettings contextSettings;
+    contextSettings.antiAliasingLevel = 8;
+
+    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Gate Simulator", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(60);
     if (!ImGui::SFML::Init(window))
         return -1;
