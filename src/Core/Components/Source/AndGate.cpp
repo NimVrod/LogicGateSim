@@ -2,8 +2,8 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <cmath>
 
-AndGate::AndGate(sf::Vector2f position, int numInputs)
-	: Gate(position, numInputs)
+AndGate::AndGate(int id, sf::Vector2f position, int numInputs)
+	: Gate(id, position, numInputs)
 {
 	body.setFillColor(sf::Color::Transparent);
 }

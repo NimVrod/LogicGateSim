@@ -1,7 +1,7 @@
 #include "../Include/Gate.h"
 
-Gate::Gate(sf::Vector2f position, int numInputs)
-	: Component(position)
+Gate::Gate(int id, sf::Vector2f position, int numInputs)
+	: Component(id, position)
 {
 	if (numInputs < 1) {
 		numInputs = 1; // Ensure at least one input

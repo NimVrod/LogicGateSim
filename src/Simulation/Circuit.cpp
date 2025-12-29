@@ -1,6 +1,4 @@
 #include "Circuit.h"
-#include <iostream>
-#include <cmath>
 #include <algorithm>
 #include <ranges>
 #include <Core/Components/Include/Button.h>
@@ -33,6 +31,7 @@ void Circuit::clear() {
     draggedComponent = nullptr;
     hoveredComponent = nullptr;
     state = circuitState::Idle;
+    nextComponentId = 1; // Reset component ID counter
 }
 
 void Circuit::update() {
@@ -45,8 +44,6 @@ void Circuit::update() {
 }
 
 void Circuit::draw(sf::RenderWindow& window) {
-    // Draw components first, then wires? Wires usually under components or over?
-    // Wires usually under.
     for (auto& wire : wires) {
         wire->draw(window);
     }
@@ -101,11 +98,9 @@ Pin* Circuit::getPinAt(sf::Vector2f pos) {
     return nullptr;
 }
 void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
-    // Get mouse position once for reuse
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
 
-    // Handle MouseMoved events - hover detection works in all states
     if (event.is<sf::Event::MouseMoved>()) {
         hoveredComponent = nullptr;
         for (auto & component : std::ranges::reverse_view(components)) {
@@ -116,7 +111,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
             }
         }
 
-        // State-specific mouse move handling
         switch (state) {
             case circuitState::DraggingComponent:
                 if (draggedComponent) {
@@ -129,7 +123,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         return;
     }
 
-    // Handle MouseButtonPressed events
     if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
         switch (state) {
             case circuitState::Idle:
@@ -191,7 +184,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         return;
     }
 
-    // Handle MouseButtonReleased events
     if (event.is<sf::Event::MouseButtonReleased>()) {
         switch (state) {
             case circuitState::DraggingComponent:
@@ -260,4 +252,8 @@ void Circuit::removeComponent(int id) {
             break;
 		}
     }
+}
+
+int Circuit::getNextId() {
+    return nextComponentId++;
 }

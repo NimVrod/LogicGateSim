@@ -8,10 +8,9 @@
 
 class Component {
 private:
-    static int nextId;
     int id;
 public:
-    Component(sf::Vector2f position);
+    Component(int id, sf::Vector2f position);
     virtual ~Component() = default;
 
     virtual void calculate() = 0;

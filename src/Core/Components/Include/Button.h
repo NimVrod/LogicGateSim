@@ -7,7 +7,7 @@
 
 class Button : public Component {
 	public:
-	Button(sf::Vector2f position, int output = 1);
+	Button(int id, sf::Vector2f position, int output = 1);
 	void calculate() override;
 	std::string GetLabel() override;
 	void draw(sf::RenderWindow& window) override;

@@ -3,8 +3,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <cmath>
 
-NandGate::NandGate(sf::Vector2f position, int numInputs)
-    : Gate(position, numInputs)
+NandGate::NandGate(int id, sf::Vector2f position, int numInputs)
+    : Gate(id, position, numInputs)
 {
     body.setFillColor(sf::Color::Transparent);
 }

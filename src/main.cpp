@@ -59,28 +59,28 @@ int main()
         // UI
         ImGui::Begin("Component Picker");
         if (ImGui::Button("Add button")) {
-            circuit.addComponent(std::make_unique<Button>(sf::Vector2f(100, 100)));
+            circuit.addComponent(std::make_unique<Button>(circuit.getNextId(), sf::Vector2f(100, 100)));
         }
         if (ImGui::Button("Add AND gate")) {
-            circuit.addComponent(std::make_unique<AndGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<AndGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
 		}
 		if (ImGui::Button("Add OR gate")) {
-            circuit.addComponent(std::make_unique<OrGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<OrGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
         }
         if (ImGui::Button("Add NOT gate")) {
-            circuit.addComponent(std::make_unique<NotGate>(sf::Vector2f(100, 100)));
+            circuit.addComponent(std::make_unique<NotGate>(circuit.getNextId(), sf::Vector2f(100, 100)));
         }
         if (ImGui::Button("Add NAND gate")) {
-            circuit.addComponent(std::make_unique<NandGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<NandGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
         }
         if (ImGui::Button("Add NOR gate")) {
-            circuit.addComponent(std::make_unique<NorGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<NorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
         }
         if (ImGui::Button("Add XOR gate")) {
-            circuit.addComponent(std::make_unique<XorGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<XorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
         }
         if (ImGui::Button("Add XNOR gate")) {
-            circuit.addComponent(std::make_unique<XnorGate>(sf::Vector2f(100, 100), numberInputs));
+            circuit.addComponent(std::make_unique<XnorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
         }
         ImGui::InputInt("Number of gates", &numberInputs);
         ImGui::Separator();

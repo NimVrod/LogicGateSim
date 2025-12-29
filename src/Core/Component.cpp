@@ -3,12 +3,11 @@
 #include "ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
-int Component::nextId = 1;
 
-Component::Component(sf::Vector2f position)
-    : position(position)
+
+Component::Component(int id, sf::Vector2f position)
+    : id(id), position(position)
 {
-	id = nextId++;
 }
 
 void Component::draw(sf::RenderWindow& window) {

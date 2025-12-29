@@ -3,8 +3,8 @@
 
 #include "Core/ResourceManager.h"
 
-Button::Button(sf::Vector2f position, int output)
-	: Component(position)
+Button::Button(int id, sf::Vector2f position, int output)
+	: Component(id, position)
 {
 	// Button has one output pin on the right side
 	body.setFillColor(sf::Color(255, 0,0));

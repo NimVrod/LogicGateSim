@@ -18,6 +18,8 @@ public:
     const std::vector<std::unique_ptr<Component>>& GetComponents() const;
     void removeComponent(int id);
 
+    int getNextId(); // Get the next component ID and increment counter
+
     void update();
     void draw(sf::RenderWindow& window);
     void setDrawAllPins(bool draw);
@@ -29,6 +31,8 @@ public:
 private:
     std::vector<std::unique_ptr<Component>> components;
     std::vector<std::unique_ptr<Wire>> wires;
+
+    int nextComponentId = 1;
 
     Pin* selectedPin = nullptr; // For creating wires
     Component* draggedComponent = nullptr;

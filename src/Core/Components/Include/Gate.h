@@ -6,7 +6,7 @@
 
 class Gate : public Component {
 public:
-	Gate(sf::Vector2f position, int numInputs = 2);
+	Gate(int id, sf::Vector2f position, int numInputs = 2);
 	virtual void calculate() = 0;
 	sf::FloatRect getBounds() const override;
 

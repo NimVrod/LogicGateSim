@@ -3,8 +3,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <cmath>
 
-NorGate::NorGate(sf::Vector2f position, int numInputs)
-    : Gate(position, numInputs)
+NorGate::NorGate(int id, sf::Vector2f position, int numInputs)
+    : Gate(id, position, numInputs)
 {
     body.setFillColor(sf::Color::Transparent);
 }

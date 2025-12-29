@@ -4,8 +4,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <cmath>
 
-XnorGate::XnorGate(sf::Vector2f position, int numInputs)
-    : Gate(position, 2)
+XnorGate::XnorGate(int id, sf::Vector2f position, int numInputs)
+    : Gate(id, position, 2)
 {
     body.setFillColor(sf::Color::Transparent);
 }

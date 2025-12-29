@@ -3,8 +3,8 @@
 #include <SFML/Graphics/VertexArray.hpp>
 #include <cmath>
 
-XorGate::XorGate(sf::Vector2f position, int numInputs)
-    : Gate(position, 2)
+XorGate::XorGate(int id, sf::Vector2f position, int numInputs)
+    : Gate(id, position, 2)
 {
     body.setFillColor(sf::Color::Transparent);
 }

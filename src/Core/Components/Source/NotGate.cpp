@@ -2,8 +2,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 
-NotGate::NotGate(sf::Vector2f position)
-    : Gate(position, 1) // NOT gate always has 1 input
+NotGate::NotGate(int id, sf::Vector2f position)
+    : Gate(id, position, 1) // NOT gate always has 1 input
 {
     body.setFillColor(sf::Color::Transparent); // Hide default rect
     
