@@ -29,6 +29,10 @@ std::string XnorGate::GetLabel() {
     return std::format("{} : XNOR Gate", GetId());
 }
 
+std::string XnorGate::getType() const {
+    return "XnorGate";
+}
+
 void XnorGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     

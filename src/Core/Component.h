@@ -15,6 +15,7 @@ public:
 
     virtual void calculate() = 0;
     virtual std::string GetLabel();
+    virtual std::string getType() const;
 	
     virtual void draw(sf::RenderWindow& window);
     virtual void drawPins(sf::RenderWindow& window);
@@ -27,7 +28,7 @@ public:
     const std::vector<std::unique_ptr<Pin>>& getInputs() const;
     const std::vector<std::unique_ptr<Pin>>& getOutputs() const;
 
-    int GetId();
+    int GetId() const;
 
 protected:
     sf::Vector2f position;

@@ -25,6 +25,10 @@ std::string AndGate::GetLabel() {
 	return std::format("{} : AND Gate", GetId());
 }
 
+std::string AndGate::getType() const {
+	return "AndGate";
+}
+
 void AndGate::draw(sf::RenderWindow& window) {
 	sf::ConvexShape shape;
 	

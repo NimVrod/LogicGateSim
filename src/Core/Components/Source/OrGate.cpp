@@ -25,6 +25,10 @@ std::string OrGate::GetLabel() {
     return std::format("{} : OR Gate", GetId());
 }
 
+std::string OrGate::getType() const {
+    return "OrGate";
+}
+
 void OrGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     float w = 60.f;

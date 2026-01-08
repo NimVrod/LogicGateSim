@@ -69,6 +69,10 @@ std::string Component::GetLabel() {
     return std::format("{} : Component", GetId());
 }
 
-int Component::GetId() {
+std::string Component::getType() const {
+    return "Component";
+}
+
+int Component::GetId() const {
     return id;
 }

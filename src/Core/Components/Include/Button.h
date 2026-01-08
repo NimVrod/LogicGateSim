@@ -10,6 +10,7 @@ class Button : public Component {
 	Button(int id, sf::Vector2f position, int output = 1);
 	void calculate() override;
 	std::string GetLabel() override;
+	std::string getType() const override;
 	void draw(sf::RenderWindow& window) override;
 	void drawLabel(sf::RenderWindow &window) override;
 	sf::FloatRect getBounds() const override;

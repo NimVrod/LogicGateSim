@@ -11,14 +11,17 @@ enum class circuitState {
     CreatingWire
 };
 class Circuit {
+    friend class CircuitSerializer;
 public:
     void addComponent(std::unique_ptr<Component> component);
     void addWire(Pin* start, Pin* end);
     void clear();
     const std::vector<std::unique_ptr<Component>>& GetComponents() const;
+    const std::vector<std::unique_ptr<Wire>>& getWires() const;
     void removeComponent(int id);
 
     int getNextId(); // Get the next component ID and increment counter
+    void setNextId(int id); // Set the next component ID (for loading)
 
     void update();
     void draw(sf::RenderWindow& window);

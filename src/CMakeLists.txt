@@ -13,12 +13,14 @@ add_executable(imgui-sfml-example
   "Core/Components/Source/XnorGate.cpp" "Core/Components/Include/XnorGate.h"
         Simulation/Circuit.cpp
         Core/ResourceManager.cpp
-        Core/ResourceManager.h)
+        Core/ResourceManager.h
+        Serialization/CircuitSerializer.cpp)
 
 # Yep, that's it!
 target_link_libraries(imgui-sfml-example
   PUBLIC
     ImGui-SFML::ImGui-SFML
+    tinyxml2
 )
 
 target_include_directories(imgui-sfml-example

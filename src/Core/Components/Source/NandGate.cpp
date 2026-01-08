@@ -27,6 +27,10 @@ std::string NandGate::GetLabel() {
     return std::format("{} : NAND Gate", GetId());
 }
 
+std::string NandGate::getType() const {
+    return "NandGate";
+}
+
 void NandGate::draw(sf::RenderWindow& window) {
     // Ideally share code with AndGate using a common helper or inheritance geometry
     // For now, duplicate standard AND shape logic and add bubble

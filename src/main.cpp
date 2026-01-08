@@ -12,6 +12,7 @@
 #include "Core/Components/Include/NorGate.h"
 #include "Core/Components/Include/XorGate.h"
 #include "Core/Components/Include/XnorGate.h"
+#include "Serialization/CircuitSerializer.h"
 
 int main()
 {
@@ -33,6 +34,11 @@ int main()
     deltaClock.restart(); // Initialize clock before loop
     ResourceManager &resourceManager = ResourceManager::getInstance();
 
+    // File path for save/load
+    static char filePath[256] = "circuit.xml";
+    static std::string statusMessage = "";
+
+
     while (window.isOpen())
     {
         while (const auto event = window.pollEvent())
@@ -44,8 +50,7 @@ int main()
                 window.close();
             }
             
-            // Pass event to circuit for Interaction (if mapped to window coords)
-            // But we might want to block circuit interaction if mouse is over ImGui?
+            //Block handleEvent over imgui
             if (!ImGui::GetIO().WantCaptureMouse) {
                 circuit.handleEvent(*event, window);
             }
@@ -86,6 +91,31 @@ int main()
         ImGui::Separator();
         if (ImGui::Button("Clear All")) {
             circuit.clear();
+        }
+        ImGui::End();
+
+        //TODO: Maybe use native file dialogs instead of text input for file paths?
+
+        // File Operations Window
+        ImGui::Begin("File Operations");
+        ImGui::InputText("File Path", filePath, sizeof(filePath));
+        if (ImGui::Button("Save")) {
+            if (CircuitSerializer::saveToFile(circuit, filePath)) {
+                statusMessage = "Circuit saved successfully!";
+            } else {
+                statusMessage = "Failed to save circuit.";
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Load")) {
+            if (CircuitSerializer::loadFromFile(circuit, filePath)) {
+                statusMessage = "Circuit loaded successfully!";
+            } else {
+                statusMessage = "Failed to load circuit.";
+            }
+        }
+        if (!statusMessage.empty()) {
+            ImGui::Text("%s", statusMessage.c_str());
         }
         ImGui::End();
 

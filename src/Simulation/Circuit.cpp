@@ -257,3 +257,11 @@ void Circuit::removeComponent(int id) {
 int Circuit::getNextId() {
     return nextComponentId++;
 }
+
+void Circuit::setNextId(int id) {
+    nextComponentId = id;
+}
+
+const std::vector<std::unique_ptr<Wire>>& Circuit::getWires() const {
+    return wires;
+}

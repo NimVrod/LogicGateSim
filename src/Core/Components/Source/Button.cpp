@@ -52,6 +52,10 @@ std::string Button::GetLabel() {
 	return std::format("{} : Button", GetId());
 }
 
+std::string Button::getType() const {
+	return "Button";
+}
+
 sf::FloatRect Button::getBounds() const {
 	return sf::FloatRect(position, body.getSize());
 }

@@ -26,6 +26,10 @@ std::string NorGate::GetLabel() {
     return std::format("{} : NOR Gate", GetId());
 }
 
+std::string NorGate::getType() const {
+    return "NorGate";
+}
+
 void NorGate::draw(sf::RenderWindow& window) {
     sf::ConvexShape shape;
     // Shrink shape slightly to fit bubble

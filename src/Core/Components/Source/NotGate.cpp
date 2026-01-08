@@ -28,6 +28,10 @@ std::string NotGate::GetLabel() {
     return std::format("{} : NOT Gate", GetId());
 }
 
+std::string NotGate::getType() const {
+    return "NotGate";
+}
+
 void NotGate::draw(sf::RenderWindow& window) {
     // Draw Triangle
     sf::ConvexShape triangle;

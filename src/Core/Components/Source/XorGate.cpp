@@ -29,6 +29,10 @@ std::string XorGate::GetLabel() {
     return std::format("{} : XOR Gate", GetId());
 }
 
+std::string XorGate::getType() const {
+    return "XorGate";
+}
+
 void XorGate::draw(sf::RenderWindow& window) {
     // OR Shape shifted right + Extra curve line
     sf::ConvexShape shape;
