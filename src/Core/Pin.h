@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 
 class Component;
@@ -22,7 +22,7 @@ public:
     void setRelativePosition(sf::Vector2f relativePosition);
     Component* getParent() const;
 
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget& target);
 
 private:
     Component* parent;

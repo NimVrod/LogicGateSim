@@ -1,6 +1,7 @@
 #include "Circuit.h"
 #include <algorithm>
 #include <ranges>
+#include <cmath>
 #include <Core/Components/Include/Button.h>
 
 void Circuit::addComponent(std::unique_ptr<Component> component) {
@@ -44,6 +45,11 @@ void Circuit::update() {
 }
 
 void Circuit::draw(sf::RenderWindow& window) {
+    // Draw grid first (background)
+    if (showGrid) {
+        drawGrid(window);
+    }
+    
     for (auto& wire : wires) {
         wire->draw(window);
     }
@@ -71,6 +77,49 @@ void Circuit::draw(sf::RenderWindow& window) {
         };
         window.draw(line, 2, sf::PrimitiveType::Lines);
     }
+}
+
+void Circuit::drawGrid(sf::RenderWindow& window) {
+    sf::View view = window.getView();
+    sf::Vector2f viewCenter = view.getCenter();
+    sf::Vector2f viewSize = view.getSize();
+    
+    float left = viewCenter.x - viewSize.x / 2;
+    float right = viewCenter.x + viewSize.x / 2;
+    float top = viewCenter.y - viewSize.y / 2;
+    float bottom = viewCenter.y + viewSize.y / 2;
+    
+    // Snap to grid lines
+    float startX = std::floor(left / gridSize) * gridSize;
+    float startY = std::floor(top / gridSize) * gridSize;
+    
+    sf::Color gridColor(50, 50, 50);
+    
+    // Draw vertical lines
+    for (float x = startX; x <= right; x += gridSize) {
+        sf::Vertex line[] = {
+            sf::Vertex{sf::Vector2f(x, top), gridColor},
+            sf::Vertex{sf::Vector2f(x, bottom), gridColor}
+        };
+        window.draw(line, 2, sf::PrimitiveType::Lines);
+    }
+    
+    // Draw horizontal lines
+    for (float y = startY; y <= bottom; y += gridSize) {
+        sf::Vertex line[] = {
+            sf::Vertex{sf::Vector2f(left, y), gridColor},
+            sf::Vertex{sf::Vector2f(right, y), gridColor}
+        };
+        window.draw(line, 2, sf::PrimitiveType::Lines);
+    }
+}
+
+sf::Vector2f Circuit::snapPosition(sf::Vector2f pos) const {
+    if (!snapToGrid) return pos;
+    return sf::Vector2f(
+        std::round(pos.x / gridSize) * gridSize,
+        std::round(pos.y / gridSize) * gridSize
+    );
 }
 
 void Circuit::setDrawAllPins(bool draw) {
@@ -114,7 +163,8 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         switch (state) {
             case circuitState::DraggingComponent:
                 if (draggedComponent) {
-                    draggedComponent->setPosition(worldPos - dragOffset);
+                    sf::Vector2f newPos = worldPos - dragOffset;
+                    draggedComponent->setPosition(snapPosition(newPos));
                 }
                 break;
             default:
@@ -161,6 +211,16 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                         }
                     }
                 }
+                else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
+                    // Right-click for context menu
+                    for (auto & component : std::ranges::reverse_view(components)) {
+                        Component* comp = component.get();
+                        if (comp->getBounds().contains(worldPos)) {
+                            contextMenuComponentId = comp->GetId();
+                            return;
+                        }
+                    }
+                }
                 break;
 
             case circuitState::CreatingWire:
@@ -188,7 +248,8 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         switch (state) {
             case circuitState::DraggingComponent:
                 if (draggedComponent) {
-                    draggedComponent->setPosition(worldPos - dragOffset);
+                    sf::Vector2f newPos = worldPos - dragOffset;
+                    draggedComponent->setPosition(snapPosition(newPos));
                     draggedComponent = nullptr;
                     state = circuitState::Idle;
                 }

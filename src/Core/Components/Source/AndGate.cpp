@@ -29,7 +29,7 @@ std::string AndGate::getType() const {
 	return "AndGate";
 }
 
-void AndGate::draw(sf::RenderWindow& window) {
+void AndGate::draw(sf::RenderTarget& target) {
 	sf::ConvexShape shape;
 	
 	float w = 60.f;
@@ -96,5 +96,5 @@ void AndGate::draw(sf::RenderWindow& window) {
 	shape.setOutlineColor(sf::Color::Black);
 	shape.setOutlineThickness(2.f);
 	shape.setOutlineColor(sf::Color::White);
-	window.draw(shape);
+	target.draw(shape);
 }

@@ -33,7 +33,7 @@ std::string XnorGate::getType() const {
     return "XnorGate";
 }
 
-void XnorGate::draw(sf::RenderWindow& window) {
+void XnorGate::draw(sf::RenderTarget& target) {
     sf::ConvexShape shape;
     
     float shift = 8.f; 
@@ -79,7 +79,7 @@ void XnorGate::draw(sf::RenderWindow& window) {
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
-    window.draw(shape);
+    target.draw(shape);
     
     // Extra Curve
     sf::VertexArray extraCurve(sf::PrimitiveType::LineStrip, segments + 1);
@@ -90,7 +90,7 @@ void XnorGate::draw(sf::RenderWindow& window) {
          extraCurve[i].position = pos + sf::Vector2f(x, y);
          extraCurve[i].color = sf::Color::White;
     }
-    window.draw(extraCurve);
+    target.draw(extraCurve);
     
     // Bubble
     sf::CircleShape bubble(bubbleRadius);
@@ -98,5 +98,5 @@ void XnorGate::draw(sf::RenderWindow& window) {
     bubble.setFillColor(sf::Color::Transparent);
     bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
-    window.draw(bubble);
+    target.draw(bubble);
 }

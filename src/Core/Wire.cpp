@@ -13,7 +13,7 @@ void Wire::update() {
     }
 }
 
-void Wire::draw(sf::RenderWindow& window) {
+void Wire::draw(sf::RenderTarget& target) {
     if (!start || !end) return;
 
     sf::Vector2f startPos = start->getPosition();
@@ -26,5 +26,5 @@ void Wire::draw(sf::RenderWindow& window) {
         sf::Vertex{endPos, color}
     };
 
-    window.draw(line, 2, sf::PrimitiveType::Lines);
+    target.draw(line, 2, sf::PrimitiveType::Lines);
 }

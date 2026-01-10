@@ -32,7 +32,7 @@ std::string NotGate::getType() const {
     return "NotGate";
 }
 
-void NotGate::draw(sf::RenderWindow& window) {
+void NotGate::draw(sf::RenderTarget& target) {
     // Draw Triangle
     sf::ConvexShape triangle;
     triangle.setPointCount(3);
@@ -60,6 +60,6 @@ void NotGate::draw(sf::RenderWindow& window) {
     bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
 
-    window.draw(triangle);
-    window.draw(bubble);
+    target.draw(triangle);
+    target.draw(bubble);
 }

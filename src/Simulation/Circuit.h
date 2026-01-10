@@ -30,6 +30,18 @@ public:
     void handleEvent(const sf::Event &event, sf::RenderWindow &window);
     void GotoComponent(int id, sf::RenderWindow& window);
     circuitState getState() const;
+    
+    // Grid settings
+    void setShowGrid(bool show) { showGrid = show; }
+    bool getShowGrid() const { return showGrid; }
+    void setSnapToGrid(bool snap) { snapToGrid = snap; }
+    bool getSnapToGrid() const { return snapToGrid; }
+    void setGridSize(float size) { gridSize = size; }
+    float getGridSize() const { return gridSize; }
+    
+    // Context menu
+    int getContextMenuComponentId() const { return contextMenuComponentId; }
+    void clearContextMenu() { contextMenuComponentId = -1; }
 
 private:
     std::vector<std::unique_ptr<Component>> components;
@@ -47,4 +59,14 @@ private:
     bool drawLabels = false;
 
     Pin* getPinAt(sf::Vector2f pos);
+    void drawGrid(sf::RenderWindow& window);
+    sf::Vector2f snapPosition(sf::Vector2f pos) const;
+    
+    // Grid
+    bool showGrid = true;
+    bool snapToGrid = true;
+    float gridSize = 20.0f;
+    
+    // Context menu
+    int contextMenuComponentId = -1;
 };

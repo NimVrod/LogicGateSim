@@ -29,7 +29,7 @@ std::string OrGate::getType() const {
     return "OrGate";
 }
 
-void OrGate::draw(sf::RenderWindow& window) {
+void OrGate::draw(sf::RenderTarget& target) {
     sf::ConvexShape shape;
     float w = 60.f;
     float h = body.getSize().y;
@@ -80,5 +80,5 @@ void OrGate::draw(sf::RenderWindow& window) {
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
-    window.draw(shape);
+    target.draw(shape);
 }

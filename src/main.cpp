@@ -1,166 +1,142 @@
-﻿#include "imgui.h"
+﻿#include <iostream>
+
+#include "imgui.h"
 #include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
-
+#include <nfd.h>
 #include "Core/ResourceManager.h"
 #include "Simulation/Circuit.h"
-#include "Core/Components/Include/Button.h"
-#include "Core/Components/Include/AndGate.h"
-#include "Core/Components/Include/OrGate.h"
-#include "Core/Components/Include/NotGate.h"
-#include "Core/Components/Include/NandGate.h"
-#include "Core/Components/Include/NorGate.h"
-#include "Core/Components/Include/XorGate.h"
-#include "Core/Components/Include/XnorGate.h"
-#include "Serialization/CircuitSerializer.h"
+#include "UI/UIManager.h"
 
 int main()
 {
+    NFD_Init();
+
     sf::ContextSettings contextSettings;
     contextSettings.antiAliasingLevel = 8;
 
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Gate Simulator", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(60);
     if (!ImGui::SFML::Init(window))
+    {
+        NFD_Quit();
         return -1;
+    }
+
+    ResourceManager& resourceManager = ResourceManager::getInstance();
 
     Circuit circuit;
-    bool simulationRunning = false;
-    bool shouldDrawPins = false;
-    bool shouldDrawLabels = false;
+    UIManager uiManager(window, circuit);
+    uiManager.Init();
+
+    // View navigation
+    sf::View circuitView = window.getDefaultView();
+    bool isPanning = false;
+    sf::Vector2i lastMousePos;
+    float zoomLevel = 1.0f;
+
     sf::Clock deltaClock;
-    int numberInputs = 2;
-    window.requestFocus();
-    deltaClock.restart(); // Initialize clock before loop
-    ResourceManager &resourceManager = ResourceManager::getInstance();
-
-    // File path for save/load
-    static char filePath[256] = "circuit.xml";
-    static std::string statusMessage = "";
-
 
     while (window.isOpen())
     {
+        if (uiManager.ShouldClose())
+        {
+            window.close();
+        }
+
+        // Set circuit view for correct coordinate mapping during events
+        window.setView(circuitView);
+        
+        // === EVENT POLLING ===
         while (const auto event = window.pollEvent())
         {
             ImGui::SFML::ProcessEvent(window, *event);
+            uiManager.ProcessEvent(*event);
 
             if (event->is<sf::Event::Closed>())
             {
                 window.close();
             }
-            
-            //Block handleEvent over imgui
-            if (!ImGui::GetIO().WantCaptureMouse) {
+            else if (!ImGui::GetIO().WantCaptureMouse)
+            {
+                // Handle view panning with middle mouse button
+                if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mousePressed->button == sf::Mouse::Button::Middle) {
+                        isPanning = true;
+                        lastMousePos = sf::Mouse::getPosition(window);
+                    }
+                }
+                else if (const auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
+                    if (mouseReleased->button == sf::Mouse::Button::Middle) {
+                        isPanning = false;
+                    }
+                }
+                else if (event->is<sf::Event::MouseMoved>()) {
+                    if (isPanning) {
+                        sf::Vector2i currentMousePos = sf::Mouse::getPosition(window);
+                        sf::Vector2f delta = window.mapPixelToCoords(lastMousePos) - window.mapPixelToCoords(currentMousePos);
+                        circuitView.move(delta);
+                        window.setView(circuitView);
+                        lastMousePos = currentMousePos;
+                    }
+                }
+                else if (const auto* mouseScrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
+                    // Zoom with mouse wheel
+                    if (mouseScrolled->wheel == sf::Mouse::Wheel::Vertical) {
+                        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                        sf::Vector2f worldPosBefore = window.mapPixelToCoords(mousePos);
+                        
+                        float zoomFactor = (mouseScrolled->delta > 0) ? 0.9f : 1.1f;
+                        zoomLevel *= zoomFactor;
+                        circuitView.zoom(zoomFactor);
+                        window.setView(circuitView);
+                        
+                        // Zoom towards mouse position
+                        sf::Vector2f worldPosAfter = window.mapPixelToCoords(mousePos);
+                        circuitView.move(worldPosBefore - worldPosAfter);
+                        window.setView(circuitView);
+                    }
+
+                     if (mouseScrolled->wheel == sf::Mouse::Wheel::Horizontal) {
+                        // Move view left/right on horizontal scroll
+                        sf::Vector2f panAmount = (mouseScrolled->delta > 0) ? sf::Vector2f(-20.f, 0.f) : sf::Vector2f(20.f, 0.f);
+                        circuitView.move(panAmount);
+                        window.setView(circuitView);
+                    }
+                }
+                
                 circuit.handleEvent(*event, window);
             }
         }
 
-        ImGui::SFML::Update(window, deltaClock.restart());
-
-        if (numberInputs > 8) numberInputs = 8;
-        if (numberInputs < 1) numberInputs = 1;
-
-        // UI
-        ImGui::Begin("Component Picker");
-        if (ImGui::Button("Add button")) {
-            circuit.addComponent(std::make_unique<Button>(circuit.getNextId(), sf::Vector2f(100, 100)));
-        }
-        if (ImGui::Button("Add AND gate")) {
-            circuit.addComponent(std::make_unique<AndGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-		}
-		if (ImGui::Button("Add OR gate")) {
-            circuit.addComponent(std::make_unique<OrGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-        }
-        if (ImGui::Button("Add NOT gate")) {
-            circuit.addComponent(std::make_unique<NotGate>(circuit.getNextId(), sf::Vector2f(100, 100)));
-        }
-        if (ImGui::Button("Add NAND gate")) {
-            circuit.addComponent(std::make_unique<NandGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-        }
-        if (ImGui::Button("Add NOR gate")) {
-            circuit.addComponent(std::make_unique<NorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-        }
-        if (ImGui::Button("Add XOR gate")) {
-            circuit.addComponent(std::make_unique<XorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-        }
-        if (ImGui::Button("Add XNOR gate")) {
-            circuit.addComponent(std::make_unique<XnorGate>(circuit.getNextId(), sf::Vector2f(100, 100), numberInputs));
-        }
-        ImGui::InputInt("Number of gates", &numberInputs);
-        ImGui::Separator();
-        if (ImGui::Button("Clear All")) {
-            circuit.clear();
-        }
-        ImGui::End();
-
-        //TODO: Maybe use native file dialogs instead of text input for file paths?
-
-        // File Operations Window
-        ImGui::Begin("File Operations");
-        ImGui::InputText("File Path", filePath, sizeof(filePath));
-        if (ImGui::Button("Save")) {
-            if (CircuitSerializer::saveToFile(circuit, filePath)) {
-                statusMessage = "Circuit saved successfully!";
-            } else {
-                statusMessage = "Failed to save circuit.";
-            }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Load")) {
-            if (CircuitSerializer::loadFromFile(circuit, filePath)) {
-                statusMessage = "Circuit loaded successfully!";
-            } else {
-                statusMessage = "Failed to load circuit.";
-            }
-        }
-        if (!statusMessage.empty()) {
-            ImGui::Text("%s", statusMessage.c_str());
-        }
-        ImGui::End();
-
-        ImGui::Begin("Simulation Control");
-        ImGui::Checkbox("Run Simulation", &simulationRunning);
-        if (ImGui::Button("Step")) {
-            circuit.update();
-        }
-        ImGui::Checkbox("Draw all pins", &shouldDrawPins);
-        ImGui::Checkbox("Draw all labels", &shouldDrawLabels);
-        ImGui::End();
-
-        ImGui::Begin("Component list");
-        const auto& components = circuit.GetComponents();
-        for (int i = 0; i < components.size(); i++)
-        {
-            ImGui::PushID(i);
-            ImGui::Text("%s", components[i]->GetLabel().c_str());
-            ImGui::SameLine();
-            if (ImGui::Button("Delete")) {
-                circuit.removeComponent(components[i]->GetId());
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Go to")) {
-                circuit.GotoComponent(components[i]->GetId(), window);
-            }
-            ImGui::PopID();
-        }
-
-        ImGui::End();
-
-        if (simulationRunning) {
-            circuit.update();
-        }
-
-        window.clear(sf::Color(20, 20, 20)); // Dark background
+        // === UPDATE ===
+        const sf::Time dt = deltaClock.restart();
         
-        circuit.setDrawAllPins(shouldDrawPins);
-        circuit.setDrawLabels(shouldDrawLabels);
+        // Update main window ImGui
+        ImGui::SFML::Update(window, dt);
+
+        uiManager.Update(dt);
+
+        // === RENDERING ===
+        // Background color matched to UIManager's theme or personal preference
+        // Using a slightly lighter dark grey than pure black for contrast
+        window.clear(sf::Color(20, 20, 20));
+        
+        // Set circuit view for drawing
+        window.setView(circuitView);
         circuit.draw(window);
+        
+        // Reset to default view for ImGui
+        window.setView(window.getDefaultView());
+        
+        // Render UI
+        uiManager.Render();
         
         ImGui::SFML::Render(window);
         window.display();
     }
 
     ImGui::SFML::Shutdown();
+    NFD_Quit();
     return 0;
 }

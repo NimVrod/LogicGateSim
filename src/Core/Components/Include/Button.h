@@ -2,7 +2,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include "../../Component.h"
 
 class Button : public Component {
@@ -11,8 +11,8 @@ class Button : public Component {
 	void calculate() override;
 	std::string GetLabel() override;
 	std::string getType() const override;
-	void draw(sf::RenderWindow& window) override;
-	void drawLabel(sf::RenderWindow &window) override;
+	void draw(sf::RenderTarget& target) override;
+	void drawLabel(sf::RenderTarget& target) override;
 	sf::FloatRect getBounds() const override;
 	void toggle();
 protected:

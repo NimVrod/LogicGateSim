@@ -31,7 +31,7 @@ std::string NandGate::getType() const {
     return "NandGate";
 }
 
-void NandGate::draw(sf::RenderWindow& window) {
+void NandGate::draw(sf::RenderTarget& target) {
     // Ideally share code with AndGate using a common helper or inheritance geometry
     // For now, duplicate standard AND shape logic and add bubble
     
@@ -92,6 +92,6 @@ void NandGate::draw(sf::RenderWindow& window) {
     bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     
-    window.draw(shape);
-    window.draw(bubble);
+    target.draw(shape);
+    target.draw(bubble);
 }

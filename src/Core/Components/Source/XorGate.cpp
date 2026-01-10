@@ -33,7 +33,7 @@ std::string XorGate::getType() const {
     return "XorGate";
 }
 
-void XorGate::draw(sf::RenderWindow& window) {
+void XorGate::draw(sf::RenderTarget& target) {
     // OR Shape shifted right + Extra curve line
     sf::ConvexShape shape;
     
@@ -81,7 +81,7 @@ void XorGate::draw(sf::RenderWindow& window) {
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
-    window.draw(shape);
+    target.draw(shape);
     
     // Draw the extra curve at the back
     // Curve similar to the back curve of OR shape, but at x=0
@@ -103,5 +103,5 @@ void XorGate::draw(sf::RenderWindow& window) {
     // SFML LineStrip doesn't support thickness natively.
     // We can draw it multiple times or use a thin quad strip if needed.
     // For now simple line strip.
-    window.draw(extraCurve);
+    target.draw(extraCurve);
 }

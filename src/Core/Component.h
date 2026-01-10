@@ -1,9 +1,11 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <vector>
 #include <memory>
+#include <string>
+#include <format>
 #include "Pin.h"
 
 class Component {
@@ -17,9 +19,9 @@ public:
     virtual std::string GetLabel();
     virtual std::string getType() const;
 	
-    virtual void draw(sf::RenderWindow& window);
-    virtual void drawPins(sf::RenderWindow& window);
-    virtual void drawLabel(sf::RenderWindow& window);
+    virtual void draw(sf::RenderTarget& target);
+    virtual void drawPins(sf::RenderTarget& target);
+    virtual void drawLabel(sf::RenderTarget& target);
     virtual sf::FloatRect getBounds() const;
 
     void setPosition(sf::Vector2f pos);

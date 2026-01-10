@@ -8,5 +8,5 @@ public:
 	void calculate() override;
 	std::string GetLabel() override;
 	std::string getType() const override;
-	void draw(sf::RenderWindow& window) override;
+	void draw(sf::RenderTarget& target) override;
 };

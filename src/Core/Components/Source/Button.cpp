@@ -14,16 +14,16 @@ Button::Button(int id, sf::Vector2f position, int output)
 	addOutput(sf::Vector2f(40.f, 20.f)); // Assuming button size 40x40
 }
 
-void Button::draw(sf::RenderWindow& window) {
+void Button::draw(sf::RenderTarget& target) {
 	if (state)
 		body.setFillColor(sf::Color(0, 255, 0));
 	else
 		body.setFillColor(sf::Color(255, 0, 0));
 	body.setPosition(getPosition());
-	window.draw(body);
+	target.draw(body);
 }
 
-void Button::drawLabel(sf::RenderWindow &window) {
+void Button::drawLabel(sf::RenderTarget& target) {
 	ResourceManager& rm = ResourceManager::getInstance();
 	sf::Font& font = rm.getFont("assets/ARIAL.TTF");
 	sf::Text text(font);
@@ -31,7 +31,7 @@ void Button::drawLabel(sf::RenderWindow &window) {
 	text.setCharacterSize(14);
 	text.setFillColor(sf::Color::White);
 	text.setPosition(sf::Vector2f(position.x, position.y + body.getSize().y + 5.f));
-	window.draw(text);
+	target.draw(text);
 }
 
 void Button::calculate() {

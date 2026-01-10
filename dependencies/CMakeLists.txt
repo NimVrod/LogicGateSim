@@ -51,3 +51,11 @@ FetchContent_Declare(
   GIT_TAG        10.0.0
 )
 FetchContent_MakeAvailable(tinyxml2)
+
+# Native File Dialog Extended for file open/save dialogs
+FetchContent_Declare(
+  nfd
+  GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+  GIT_TAG        v1.2.1
+)
+FetchContent_MakeAvailable(nfd)

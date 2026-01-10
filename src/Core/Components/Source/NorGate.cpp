@@ -30,7 +30,7 @@ std::string NorGate::getType() const {
     return "NorGate";
 }
 
-void NorGate::draw(sf::RenderWindow& window) {
+void NorGate::draw(sf::RenderTarget& target) {
     sf::ConvexShape shape;
     // Shrink shape slightly to fit bubble
     float w = 55.f; 
@@ -82,6 +82,6 @@ void NorGate::draw(sf::RenderWindow& window) {
     bubble.setOutlineColor(sf::Color::White);
     bubble.setOutlineThickness(2.f);
     
-    window.draw(shape);
-    window.draw(bubble);
+    target.draw(shape);
+    target.draw(bubble);
 }

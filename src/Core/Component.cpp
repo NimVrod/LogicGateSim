@@ -10,20 +10,20 @@ Component::Component(int id, sf::Vector2f position)
 {
 }
 
-void Component::draw(sf::RenderWindow& window) {
+void Component::draw(sf::RenderTarget& target) {
     // Base draw - subclasses handle their own drawing
 }
 
-void Component::drawPins(sf::RenderWindow &window) {
+void Component::drawPins(sf::RenderTarget& target) {
     for (const auto& pin : inputs) {
-        pin->draw(window);
+        pin->draw(target);
     }
     for (const auto& pin : outputs) {
-        pin->draw(window);
+        pin->draw(target);
     }
 }
 
-void Component::drawLabel(sf::RenderWindow &window) {
+void Component::drawLabel(sf::RenderTarget& target) {
     ResourceManager& rm = ResourceManager::getInstance();
     sf::Font& font = rm.getFont("assets/ARIAL.TTF");
     sf::Text text(font);
@@ -32,7 +32,7 @@ void Component::drawLabel(sf::RenderWindow &window) {
     text.setFillColor(sf::Color::White);
     auto longer = std::max(getInputs().size(), getOutputs().size());
     text.setPosition(sf::Vector2f(position.x - 10.f, position.y + longer * 20.f + 10.f ));
-    window.draw(text);
+    target.draw(text);
 }
 
 void Component::setPosition(sf::Vector2f pos) {

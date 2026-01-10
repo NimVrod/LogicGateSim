@@ -14,13 +14,16 @@ add_executable(imgui-sfml-example
         Simulation/Circuit.cpp
         Core/ResourceManager.cpp
         Core/ResourceManager.h
-        Serialization/CircuitSerializer.cpp)
+        Serialization/CircuitSerializer.cpp
+        UI/ComponentPreview.cpp
+        UI/UIManager.cpp)
 
 # Yep, that's it!
 target_link_libraries(imgui-sfml-example
   PUBLIC
     ImGui-SFML::ImGui-SFML
     tinyxml2
+    nfd
 )
 
 target_include_directories(imgui-sfml-example

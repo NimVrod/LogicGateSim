@@ -31,7 +31,7 @@ Component* Pin::getParent() const {
     return parent;
 }
 
-void Pin::draw(sf::RenderWindow& window) {
+void Pin::draw(sf::RenderTarget& target) {
     // Determine color based on state
     sf::Color fillColor = (value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50); // Green for high, dark gray for low
     
@@ -45,5 +45,5 @@ void Pin::draw(sf::RenderWindow& window) {
     shape.setOutlineThickness(1.f);
     shape.setOutlineColor(sf::Color::White);
 
-    window.draw(shape);
+    target.draw(shape);
 }
