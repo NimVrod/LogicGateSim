@@ -8,14 +8,71 @@
 #include "../Core/Components/Include/NorGate.h"
 #include "../Core/Components/Include/XorGate.h"
 #include "../Core/Components/Include/XnorGate.h"
+#include "../Core/Components/Include/InputComponent.h"
+#include "../Core/Components/Include/OutputComponent.h"
+#include "../Core/Components/Include/CustomComponent.h"
+#include "../Core/Components/Include/ClockComponent.h"
+#include "../Core/Components/Include/LEDComponent.h"
+#include "../Core/Components/Include/SRFlipFlop.h"
+#include "../Core/Components/Include/DFlipFlop.h"
+#include "../Core/Components/Include/JKFlipFlop.h"
+#include "../Core/Components/Include/TFlipFlop.h"
 #include <tinyxml2.h>
 #include <filesystem>
 #include <iostream>
 #include <unordered_map>
+#include <fstream>
+#include <functional>
 
-const std::string CircuitSerializer::currentVersion = "0.1";
+const std::string CircuitSerializer::currentVersion = "0.2";
 
-bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& filepath) {
+namespace {
+    struct ComponentParams {
+        int id;
+        sf::Vector2f position;
+        int numInputs;
+        tinyxml2::XMLElement* element;
+    };
+
+    using ComponentFactory = std::function<std::unique_ptr<Component>(const ComponentParams&)>;
+
+    // No switch case for strings in C++, so we use a map of lambda factories
+    const std::unordered_map<std::string, ComponentFactory>& getComponentFactories() {
+        static const std::unordered_map<std::string, ComponentFactory> factories = {
+            {"Button", [](const ComponentParams& p) { return std::make_unique<Button>(p.id, p.position); }},
+            {"AndGate", [](const ComponentParams& p) { return std::make_unique<AndGate>(p.id, p.position, p.numInputs); }},
+            {"OrGate", [](const ComponentParams& p) { return std::make_unique<OrGate>(p.id, p.position, p.numInputs); }},
+            {"NotGate", [](const ComponentParams& p) { return std::make_unique<NotGate>(p.id, p.position); }},
+            {"NandGate", [](const ComponentParams& p) { return std::make_unique<NandGate>(p.id, p.position, p.numInputs); }},
+            {"NorGate", [](const ComponentParams& p) { return std::make_unique<NorGate>(p.id, p.position, p.numInputs); }},
+            {"XorGate", [](const ComponentParams& p) { return std::make_unique<XorGate>(p.id, p.position, p.numInputs); }},
+            {"XnorGate", [](const ComponentParams& p) { return std::make_unique<XnorGate>(p.id, p.position, p.numInputs); }},
+            {"InputComponent", [](const ComponentParams& p) {
+                int index = p.element->IntAttribute("index", 0);
+                return std::make_unique<InputComponent>(p.id, p.position, index);
+            }},
+            {"OutputComponent", [](const ComponentParams& p) {
+                int index = p.element->IntAttribute("index", 0);
+                return std::make_unique<OutputComponent>(p.id, p.position, index);
+            }},
+            {"CustomComponent", [](const ComponentParams& p) -> std::unique_ptr<Component> {
+                const char* defName = p.element->Attribute("definitionName");
+                if (defName)
+                    return std::make_unique<CustomComponent>(p.id, p.position, defName);
+                return nullptr;
+            }},
+            {"ClockComponent", [](const ComponentParams& p) { return std::make_unique<ClockComponent>(p.id, p.position); }},
+            {"LEDComponent", [](const ComponentParams& p) { return std::make_unique<LEDComponent>(p.id, p.position); }},
+            {"SRFlipFlop", [](const ComponentParams& p) { return std::make_unique<SRFlipFlop>(p.id, p.position); }},
+            {"DFlipFlop", [](const ComponentParams& p) { return std::make_unique<DFlipFlop>(p.id, p.position); }},
+            {"JKFlipFlop", [](const ComponentParams& p) { return std::make_unique<JKFlipFlop>(p.id, p.position); }},
+            {"TFlipFlop", [](const ComponentParams& p) { return std::make_unique<TFlipFlop>(p.id, p.position); }},
+        };
+        return factories;
+    }
+}
+
+std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
     tinyxml2::XMLDocument doc;
 
     auto* declaration = doc.NewDeclaration();
@@ -36,6 +93,17 @@ bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& fi
         compElem->SetAttribute("y", comp->getPosition().y);
         compElem->SetAttribute("numInputs", static_cast<int>(comp->getInputs().size()));
         compElem->SetAttribute("numOutputs", static_cast<int>(comp->getOutputs().size()));
+        
+        if (comp->GetType() == ComponentType::INPUT) {
+            if (auto* inputComp = dynamic_cast<InputComponent*>(comp.get()))
+                compElem->SetAttribute("index", inputComp->getIndex());
+        } else if (comp->GetType() == ComponentType::OUTPUT) {
+            if (auto* outputComp = dynamic_cast<OutputComponent*>(comp.get()))
+                compElem->SetAttribute("index", outputComp->getIndex());
+        } else if (comp->GetType() == ComponentType::CUSTOM) {
+            if (auto* customComp = dynamic_cast<CustomComponent*>(comp.get()))
+                compElem->SetAttribute("definitionName", customComp->getDefinitionName().c_str());
+        }
 
         componentsElem->InsertEndChild(compElem);
     }
@@ -78,35 +146,36 @@ bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& fi
         wiresElem->InsertEndChild(wireElem);
     }
 
-    return doc.SaveFile(filepath.c_str()) == tinyxml2::XML_SUCCESS;
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+    return std::string(printer.CStr());
 }
 
-bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepath) {
-    if (!std::filesystem::exists(filepath)) {
+bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& filepath) {
+    std::string xmlContent = saveToXmlString(circuit);
+    std::ofstream file(filepath);
+    if (!file.is_open())
         return false;
-    }
+    file << xmlContent;
+    return file.good();
+}
 
-    tinyxml2::XMLDocument doc;
-    if (doc.LoadFile(filepath.c_str()) != tinyxml2::XML_SUCCESS) {
-        return false;
-    }
-
-    auto* root = doc.FirstChildElement("Circuit");
-    if (!root) {
-        return false;
-    }
-
-    if (strcmp(root->Attribute("version"), currentVersion.c_str()) != 0) {
-
-        std::cout << "Warning: Circuit version mismatch. Expected " << currentVersion
-                  << " but found " << (root->Attribute("version") ? root->Attribute("version") : "unknown") << ".\n";
-        return false;
+bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElement* root, bool strictVersion) {
+    const char* version = root->Attribute("version");
+    if (strictVersion) {
+        if (!version || strcmp(version, currentVersion.c_str()) != 0) {
+            std::cout << "Warning: Circuit version mismatch. Expected " << currentVersion<< " but found " << (version ? version : "unknown") << ".\n";
+            return false;
+        }
+    } else if (version && strcmp(version, currentVersion.c_str()) != 0) {
+        std::cout << "Warning: Circuit version mismatch in XML string.\n";
     }
 
     circuit.clear();
 
     std::unordered_map<int, Component*> idToComponent;
     int maxId = 0;
+    const auto& factories = getComponentFactories();
 
     auto* componentsElem = root->FirstChildElement("Components");
     if (componentsElem) {
@@ -114,38 +183,24 @@ bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepa
              compElem;
              compElem = compElem->NextSiblingElement("Component")) {
 
-            int id = compElem->IntAttribute("id");
             const char* type = compElem->Attribute("type");
-            float x = compElem->FloatAttribute("x");
-            float y = compElem->FloatAttribute("y");
-            int numInputs = compElem->IntAttribute("numInputs", 2);
-            int numOutputs = compElem->IntAttribute("numOutputs", 1);
+            if (!type) continue;
 
-            sf::Vector2f pos(x, y);
-            std::unique_ptr<Component> comp;
+            ComponentParams params{
+                compElem->IntAttribute("id"),
+                sf::Vector2f(compElem->FloatAttribute("x"), compElem->FloatAttribute("y")),
+                compElem->IntAttribute("numInputs", 2),
+                compElem
+            };
 
-            if (strcmp(type, "Button") == 0) {
-                comp = std::make_unique<Button>(id, pos);
-            } else if (strcmp(type, "AndGate") == 0) {
-                comp = std::make_unique<AndGate>(id, pos, numInputs);
-            } else if (strcmp(type, "OrGate") == 0) {
-                comp = std::make_unique<OrGate>(id, pos, numInputs);
-            } else if (strcmp(type, "NotGate") == 0) {
-                comp = std::make_unique<NotGate>(id, pos);
-            } else if (strcmp(type, "NandGate") == 0) {
-                comp = std::make_unique<NandGate>(id, pos, numInputs);
-            } else if (strcmp(type, "NorGate") == 0) {
-                comp = std::make_unique<NorGate>(id, pos, numInputs);
-            } else if (strcmp(type, "XorGate") == 0) {
-                comp = std::make_unique<XorGate>(id, pos, numInputs);
-            } else if (strcmp(type, "XnorGate") == 0) {
-                comp = std::make_unique<XnorGate>(id, pos, numInputs);
-            }
-
-            if (comp) {
-                idToComponent[id] = comp.get();
-                maxId = std::max(maxId, id);
-                circuit.components.push_back(std::move(comp));
+            auto it = factories.find(type);
+            if (it != factories.end()) {
+                auto comp = it->second(params);
+                if (comp) {
+                    idToComponent[params.id] = comp.get();
+                    maxId = std::max(maxId, params.id);
+                    circuit.components.push_back(std::move(comp));
+                }
             }
         }
     }
@@ -184,4 +239,34 @@ bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepa
     }
 
     return true;
+}
+
+bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepath) {
+    if (!std::filesystem::exists(filepath))
+        return false;
+
+    tinyxml2::XMLDocument doc;
+    if (doc.LoadFile(filepath.c_str()) != tinyxml2::XML_SUCCESS)
+        return false;
+
+    auto* root = doc.FirstChildElement("Circuit");
+    if (!root)
+        return false;
+
+    return loadFromXmlElement(circuit, root, true);
+}
+
+bool CircuitSerializer::loadFromXmlString(Circuit& circuit, const std::string& xmlString) {
+    if (xmlString.empty())
+        return false;
+
+    tinyxml2::XMLDocument doc;
+    if (doc.Parse(xmlString.c_str()) != tinyxml2::XML_SUCCESS)
+        return false;
+
+    auto* root = doc.FirstChildElement("Circuit");
+    if (!root)
+        return false;
+
+    return loadFromXmlElement(circuit, root, false);
 }

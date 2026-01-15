@@ -11,6 +11,7 @@ class Button : public Component {
 	void calculate() override;
 	std::string GetLabel() override;
 	std::string getType() const override;
+	ComponentType GetType() override { return ComponentType::BUTTON; }
 	void draw(sf::RenderTarget& target) override;
 	void drawLabel(sf::RenderTarget& target) override;
 	sf::FloatRect getBounds() const override;

@@ -3,6 +3,7 @@
 #include <ranges>
 #include <cmath>
 #include <Core/Components/Include/Button.h>
+#include <Core/Components/Include/ClockComponent.h>
 
 void Circuit::addComponent(std::unique_ptr<Component> component) {
     components.push_back(std::move(component));
@@ -14,11 +15,9 @@ void Circuit::addComponent(std::unique_ptr<Component> component) {
 
 void Circuit::addWire(Pin* start, Pin* end) {
     if (start && end && start != end) {
-        // Basic check: Output -> Input
         if (start->getType() == PinType::Input && end->getType() == PinType::Output) {
-            std::swap(start, end);
+            std::swap(start, end); // Ensure start is Output and end is Input
         }
-        
         if (start->getType() == PinType::Output && end->getType() == PinType::Input) {
              wires.push_back(std::make_unique<Wire>(start, end));
         }
@@ -33,6 +32,14 @@ void Circuit::clear() {
     hoveredComponent = nullptr;
     state = circuitState::Idle;
     nextComponentId = 1; // Reset component ID counter
+}
+
+void Circuit::tickClocks() {
+    for (auto& comp : components) {
+        if (auto* clock = dynamic_cast<ClockComponent*>(comp.get())) {
+            clock->tick();
+        }
+    }
 }
 
 void Circuit::update() {
@@ -131,7 +138,7 @@ void Circuit::setDrawLabels(bool draw) {
 }
 
 Pin* Circuit::getPinAt(sf::Vector2f pos) {
-    const float radius = 10.f; // Tolerance
+    auto radius = Pin::RADIUS + 2.0f; // Slightly larger for easier clicking
     for (auto& comp : components) {
         for (auto& pin : comp->getInputs()) {
             sf::Vector2f pinPos = pin->getPosition();
@@ -146,6 +153,7 @@ Pin* Circuit::getPinAt(sf::Vector2f pos) {
     }
     return nullptr;
 }
+
 void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
@@ -157,6 +165,12 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
             if (comp->getBounds().contains(worldPos)) {
                 hoveredComponent = comp;
                 break;
+            }
+        }
+        if (!hoveredComponent) {
+            auto pin = getPinAt(worldPos);
+            if (pin) {
+                hoveredComponent = pin->getParent();
             }
         }
 
@@ -305,11 +319,7 @@ void Circuit::removeComponent(int id) {
                 hoveredComponent = nullptr;
             }
 
-            // Swap-and-pop removal
-            if (i != components.size() - 1) {
-                components[i] = std::move(components.back());
-            }
-            components.pop_back();
+            components.erase(components.begin() + i);
             break;
 		}
     }
@@ -325,4 +335,13 @@ void Circuit::setNextId(int id) {
 
 const std::vector<std::unique_ptr<Wire>>& Circuit::getWires() const {
     return wires;
+}
+
+Component* Circuit::getComponentById(int id) {
+    for (auto& comp : components) {
+        if (comp->GetId() == id) {
+            return comp.get();
+        }
+    }
+    return nullptr;
 }

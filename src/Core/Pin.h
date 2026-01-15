@@ -12,6 +12,7 @@ enum class PinType {
 
 class Pin {
 public:
+	static const float RADIUS;
     Pin(Component* parent, PinType type, sf::Vector2f relativePosition);
 
     void setValue(int value);
@@ -22,7 +23,7 @@ public:
     void setRelativePosition(sf::Vector2f relativePosition);
     Component* getParent() const;
 
-    void draw(sf::RenderTarget& target);
+    void draw(sf::RenderTarget& target) const;
 
 private:
     Component* parent;

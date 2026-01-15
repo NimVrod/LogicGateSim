@@ -9,4 +9,5 @@ public:
     void draw(sf::RenderTarget& target) override;
     std::string GetLabel() override;
     std::string getType() const override;
+    ComponentType GetType() override { return ComponentType::NAND; }
 };

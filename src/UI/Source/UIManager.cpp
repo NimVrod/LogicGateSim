@@ -1,0 +1,644 @@
+#include "../Include/UIManager.h"
+#include <nfd.h>
+#include "../../Serialization/CircuitSerializer.h"
+#include "../../Core/ResourceManager.h"
+#include "../../Core/Components/Include/Button.h"
+#include "../../Core/Components/Include/AndGate.h"
+#include "../../Core/Components/Include/OrGate.h"
+#include "../../Core/Components/Include/NotGate.h"
+#include "../../Core/Components/Include/NandGate.h"
+#include "../../Core/Components/Include/NorGate.h"
+#include "../../Core/Components/Include/XorGate.h"
+#include "../../Core/Components/Include/XnorGate.h"
+#include "../../Core/Components/Include/InputComponent.h"
+#include "../../Core/Components/Include/OutputComponent.h"
+#include "../../Core/Components/Include/CustomComponent.h"
+#include "../../Core/Components/Include/ClockComponent.h"
+#include "../../Core/Components/Include/LEDComponent.h"
+#include "../../Core/Components/Include/SRFlipFlop.h"
+#include "../../Core/Components/Include/DFlipFlop.h"
+#include "../../Core/Components/Include/JKFlipFlop.h"
+#include "../../Core/Components/Include/TFlipFlop.h"
+#include "../../Core/Components/CustomComponent/CustomComponentManager.h"
+#include "../../Core/Components/CustomComponent/CustomComponentDefinition.h"
+
+const char* UIManager::gateTypes[] = { "AND", "OR", "NOT", "NAND", "NOR", "XOR", "XNOR" };
+const char* UIManager::inputTypes[] = { "Button", "Input Pin", "Clock" };
+const char* UIManager::outputTypes[] = { "Output Pin", "LED" };
+const char* UIManager::otherTypes[] = { "SR FF", "D FF", "JK FF", "T FF" };
+
+UIManager& UIManager::getInstance() {
+    static UIManager instance;
+    return instance;
+}
+
+void UIManager::Init(sf::RenderWindow& win, Circuit& circ) {
+    window = &win;
+    circuit = &circ;
+    LoadTheme();
+    CustomComponentManager::getInstance().loadFromFile(customComponentsFile);
+}
+
+void UIManager::LoadTheme() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    
+    style.WindowRounding = 8.0f;
+    style.FrameRounding = 5.0f;
+    style.PopupRounding = 5.0f;
+    style.ScrollbarRounding = 12.0f;
+    style.GrabRounding = 5.0f;
+    style.TabRounding = 5.0f;
+    
+    style.Colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.12f, 0.12f, 0.12f, 0.95f);
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    style.Colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.21f, 0.22f, 0.54f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.40f, 0.40f, 0.40f, 0.40f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.18f, 0.18f, 0.18f, 0.67f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.20f, 0.22f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.24f, 0.24f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.30f, 0.30f, 0.31f, 1.00f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+    style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    style.Colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.35f, 0.58f, 0.86f);
+    style.Colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    style.Colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.41f, 0.68f, 1.00f);
+    style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.10f, 0.15f, 0.97f);
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.26f, 0.42f, 1.00f);
+    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+    style.Colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+    style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+    style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+}
+
+void UIManager::Update(sf::Time dt) {
+    timeAccumulator += dt.asSeconds();
+    if (simulationRunning) {
+        if (simulationInterval <= 0.0f) {
+            static int frameCounter = 0;
+            frameCounter++;
+            if (clocksEnabled && frameCounter >= 30) {
+                circuit->tickClocks();
+                frameCounter = 0;
+            }
+            circuit->update();
+            pinPlotter.recordValues();
+        }
+        else if (timeAccumulator >= simulationInterval) {
+            if (clocksEnabled)
+                circuit->tickClocks();
+            circuit->update();
+            pinPlotter.recordValues();
+            timeAccumulator = 0.0f;
+        }
+    }
+    
+    if (!statusMessage.empty()) {
+        statusMessageTimer += dt.asSeconds();
+        if (statusMessageTimer >= STATUS_MESSAGE_DURATION) {
+            statusMessage.clear();
+            statusMessageTimer = 0.0f;
+        }
+    }
+}
+
+void UIManager::Render() {
+    DrawMenuBar();
+    
+    if (showComponentPicker) DrawComponentPicker();
+    if (showSimulationControl) DrawSimulationControl();
+    if (showComponentList) DrawComponentList();
+    if (showComponentPreview != componentPreview.isVisible()) {
+        if (showComponentPreview) componentPreview.show();
+        else componentPreview.hide();
+    }
+    
+    componentPreview.renderUI();
+    showComponentPreview = componentPreview.isVisible();
+    
+    if (showPinPlotter != pinPlotter.isVisible()) {
+        if (showPinPlotter) pinPlotter.show();
+        else pinPlotter.hide();
+    }
+    pinPlotter.renderUI();
+    showPinPlotter = pinPlotter.isVisible();
+
+    DrawContextMenu();
+    DrawStatus();
+}
+
+void UIManager::DrawMenuBar() {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+                nfdu8char_t* outPath = nullptr;
+                nfdu8filteritem_t filters[1] = { { "Circuit Files", "xml" } };
+                nfdsavedialogu8args_t args = {0};
+                args.filterList = filters;
+                args.filterCount = 1;
+                args.defaultName = "circuit.xml";
+                
+                nfdresult_t result = NFD_SaveDialogU8_With(&outPath, &args);
+                if (result == NFD_OKAY) {
+                    currentFilePath = outPath;
+                    if (CircuitSerializer::saveToFile(*circuit, currentFilePath)) {
+                        setStatusMessage("Saved: " + currentFilePath);
+                    } else {
+                        setStatusMessage("Failed to save circuit.");
+                    }
+                    NFD_FreePathU8(outPath);
+                }
+            }
+            
+            if (ImGui::MenuItem("Open", "Ctrl+O")) {
+                nfdu8char_t* outPath = nullptr;
+                nfdu8filteritem_t filters[1] = { { "Circuit Files", "xml" } };
+                nfdopendialogu8args_t args = {nullptr};
+                args.filterList = filters;
+                args.filterCount = 1;
+                
+                nfdresult_t result = NFD_OpenDialogU8_With(&outPath, &args);
+                if (result == NFD_OKAY) {
+                    pendingOpenPath = outPath;
+                    NFD_FreePathU8(outPath);
+                    showOpenConfirmPopup = true;
+                }
+            }
+            
+            if (ImGui::MenuItem("Save As Custom Component")) {
+                bool hasInputs = false;
+                bool hasOutputs = false;
+                for (const auto& comp : circuit->GetComponents()) {
+                    if (comp->GetType() == ComponentType::INPUT) hasInputs = true;
+                    if (comp->GetType() == ComponentType::OUTPUT) hasOutputs = true;
+                }
+                
+                if (!hasInputs && !hasOutputs) {
+                    setStatusMessage("Add Input/Output components to define the interface.");
+                } else {
+                    customComponentName.clear();
+                    showSaveAsCustomPopup = true;
+                }
+            }
+            
+            ImGui::Separator();
+            
+            if (ImGui::MenuItem("Exit")) {
+                shouldClose = true;
+            }
+            
+            ImGui::EndMenu();
+        }
+        
+        if (ImGui::BeginMenu("View")) {
+            ImGui::MenuItem("Component Picker", nullptr, &showComponentPicker);
+            ImGui::MenuItem("Simulation Control", nullptr, &showSimulationControl);
+            ImGui::MenuItem("Component List", nullptr, &showComponentList);
+            ImGui::MenuItem("Component Preview", nullptr, &showComponentPreview);
+            ImGui::MenuItem("Pin Plotter", nullptr, &showPinPlotter);
+            ImGui::Separator();
+            if (ImGui::MenuItem("Show All")) {
+                showComponentPicker = true;
+                showSimulationControl = true;
+                showComponentList = true;
+                showComponentPreview = true;
+                showPinPlotter = true;
+            }
+            if (ImGui::MenuItem("Hide All")) {
+                showComponentPicker = false;
+                showSimulationControl = false;
+                showComponentList = false;
+                showComponentPreview = false;
+                showPinPlotter = false;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    if (showOpenConfirmPopup) {
+        ImGui::OpenPopup("Confirm Open");
+    }
+    
+    if (ImGui::BeginPopupModal("Confirm Open", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Opening a new circuit will overwrite the current one.");
+        ImGui::Text("Are you sure you want to continue?");
+        ImGui::Separator();
+        
+        if (ImGui::Button("Open", ImVec2(120, 0))) {
+            if (CircuitSerializer::loadFromFile(*circuit, pendingOpenPath)) {
+                currentFilePath = pendingOpenPath;
+                setStatusMessage("Loaded: " + currentFilePath);
+            } else {
+                setStatusMessage("Failed to load circuit.");
+            }
+            showOpenConfirmPopup = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            showOpenConfirmPopup = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+    
+    if (showSaveAsCustomPopup) {
+        ImGui::OpenPopup("Save As Custom Component");
+    }
+    
+    if (ImGui::BeginPopupModal("Save As Custom Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter a name for your custom component:");
+        
+        static char nameBuffer[64] = "";
+        if (showSaveAsCustomPopup) {
+            strncpy_s(nameBuffer, customComponentName.c_str(), sizeof(nameBuffer) - 1);
+            showSaveAsCustomPopup = false;
+        }
+        
+        ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer));
+        
+        int inputCount = 0, outputCount = 0;
+        for (const auto& comp : circuit->GetComponents()) {
+            if (comp->GetType() == ComponentType::INPUT) inputCount++;
+            if (comp->GetType() == ComponentType::OUTPUT) outputCount++;
+        }
+        ImGui::Text("Inputs: %d, Outputs: %d", inputCount, outputCount);
+        
+        ImGui::Separator();
+        
+        if (ImGui::Button("Save", ImVec2(120, 0))) {
+            std::string name = nameBuffer;
+            if (!name.empty()) {
+                CustomComponentDefinition def;
+                def.name = name;
+                def.circuitXml = CircuitSerializer::saveToXmlString(*circuit);
+                def.numInputs = inputCount;
+                def.numOutputs = outputCount;
+                
+                if (CustomComponentManager::getInstance().addDefinition(def)) {
+                    CustomComponentManager::getInstance().saveToFile(customComponentsFile);
+                    setStatusMessage("Saved custom component: " + name);
+                } else {
+                    setStatusMessage("Component '" + name + "' already exists.");
+                }
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void UIManager::DrawComponentPicker() {
+    ImGui::Begin("Component Picker", &showComponentPicker);
+    
+    if (ImGui::BeginTabBar("ComponentCategories")) {
+        if (ImGui::BeginTabItem("Gates")) {
+            selectedCategory = 0;
+            ImGui::Combo("Gate Type", &selectedGate, gateTypes, IM_ARRAYSIZE(gateTypes));
+            
+            if (selectedGate != 2) {
+                ImGui::SliderInt("Number of Inputs", &numberInputs, 2, 8);
+            }
+            
+            if (ImGui::Button("Add Gate", ImVec2(-1, 0))) {
+                AddGate(selectedGate, sf::Vector2f(100, 100));
+            }
+
+            int inputs = (selectedGate == 2) ? 1 : numberInputs;
+            ComponentType previewType = ComponentType::UNDEFINED;
+            switch (selectedGate) {
+                case 0: previewType = ComponentType::AND; break;
+                case 1: previewType = ComponentType::OR; break;
+                case 2: previewType = ComponentType::NOT; break;
+                case 3: previewType = ComponentType::NAND; break;
+                case 4: previewType = ComponentType::NOR; break;
+                case 5: previewType = ComponentType::XOR; break;
+                case 6: previewType = ComponentType::XNOR; break;
+            }
+            componentPreview.setComponentType(previewType, inputs);
+
+            ImGui::EndTabItem();
+        }
+        
+        if (ImGui::BeginTabItem("Inputs")) {
+            selectedCategory = 1;
+            ImGui::Combo("Input Type", &selectedInput, inputTypes, IM_ARRAYSIZE(inputTypes));
+            
+            if (ImGui::Button("Add Input", ImVec2(-1, 0))) {
+                AddInput(selectedInput, sf::Vector2f(100, 100));
+            }
+            ComponentType previewType = ComponentType::UNDEFINED;
+            switch (selectedInput) {
+                case 0: previewType = ComponentType::BUTTON; break;
+                case 1: previewType = ComponentType::INPUT; break;
+                case 2: previewType = ComponentType::CLOCK; break;
+            }
+            componentPreview.setComponentType(previewType, 1);
+
+            ImGui::EndTabItem();
+        }
+        
+        if (ImGui::BeginTabItem("Outputs")) {
+            selectedCategory = 2;
+            ImGui::Combo("Output Type", &selectedOutput, outputTypes, IM_ARRAYSIZE(outputTypes));
+            
+            if (ImGui::Button("Add Output", ImVec2(-1, 0))) {
+                AddOutput(selectedOutput, sf::Vector2f(100, 100));
+            }
+
+            ComponentType previewType = ComponentType::UNDEFINED;
+            switch (selectedOutput) {
+                case 0: previewType = ComponentType::OUTPUT; break;
+                case 1: previewType = ComponentType::LED; break;
+            }
+            componentPreview.setComponentType(previewType, 1);
+
+            ImGui::EndTabItem();
+        }
+        
+        if (ImGui::BeginTabItem("Other")) {
+            selectedCategory = 3;
+            ImGui::Combo("Component Type", &selectedOther, otherTypes, IM_ARRAYSIZE(otherTypes));
+            
+            if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
+                AddOther(selectedOther, sf::Vector2f(100, 100));
+            }
+
+            ComponentType previewType = ComponentType::UNDEFINED;
+            switch (selectedOther) {
+                case 0: previewType = ComponentType::SR_FF; break;
+                case 1: previewType = ComponentType::D_FF; break;
+                case 2: previewType = ComponentType::JK_FF; break;
+                case 3: previewType = ComponentType::T_FF; break;
+            }
+            componentPreview.setComponentType(previewType, 1);
+
+            ImGui::EndTabItem();
+        }
+        
+        if (ImGui::BeginTabItem("Custom")) {
+            selectedCategory = 4;
+            
+            auto names = CustomComponentManager::getInstance().getDefinitionNames();
+            if (names.empty()) {
+                ImGui::TextDisabled("No custom components available.");
+                ImGui::TextDisabled("Use File > Save As Custom Component.");
+            } else {
+                std::string comboItems;
+                for (const auto& name : names) {
+                    comboItems += name;
+                    comboItems += '\0';
+                }
+                comboItems += '\0';
+                
+                if (selectedCustom >= static_cast<int>(names.size())) {
+                    selectedCustom = 0;
+                }
+                
+                ImGui::Combo("Component", &selectedCustom, comboItems.c_str());
+                
+                const auto* def = CustomComponentManager::getInstance().getDefinition(names[selectedCustom]);
+                if (def) {
+                    ImGui::Text("Inputs: %d, Outputs: %d", def->numInputs, def->numOutputs);
+                }
+                
+                if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
+                    AddCustomComponent(names[selectedCustom], sf::Vector2f(100, 100));
+                }
+                
+                componentPreview.setComponentType(ComponentType::CUSTOM, def ? def->numInputs : 0);
+            }
+            
+            ImGui::EndTabItem();
+        }
+        
+        ImGui::EndTabBar();
+    }
+    
+    ImGui::Separator();
+    
+    if (ImGui::Button(componentPreview.isVisible() ? "Hide Preview" : "Show Preview"))
+        showComponentPreview = !showComponentPreview;
+
+    ImGui::Separator();
+    
+    if (ImGui::Button("Clear All", ImVec2(-1, 0))) {
+        circuit->clear();
+    }
+    
+    ImGui::End();
+}
+
+void UIManager::DrawSimulationControl() {
+    ImGui::Begin("Simulation Control", &showSimulationControl);
+    ImGui::Checkbox("Run Simulation", &simulationRunning);
+    ImGui::SameLine();
+    if (ImGui::Button("Step"))
+        circuit->update();
+    ImGui::SliderFloat("Update Interval (s)", &simulationInterval, 0.0f, 2.0f, "%.2f");
+    if (simulationInterval == 0.0f)
+        ImGui::Text("Mode: Every frame");
+    else
+        ImGui::Text("Mode: Every %.2f seconds", simulationInterval);
+
+    ImGui::Separator();
+    ImGui::Text("Clocks:");
+    ImGui::Checkbox("Enable Clocks", &clocksEnabled);
+    ImGui::SameLine();
+    if (ImGui::Button("Tick Clocks")) {
+        circuit->tickClocks();
+        circuit->update();
+    }
+    
+    ImGui::Separator();
+    bool prevDrawPins = shouldDrawPins;
+    bool prevDrawLabels = shouldDrawLabels;
+    ImGui::Checkbox("Draw all pins", &shouldDrawPins);
+    ImGui::Checkbox("Draw all labels", &shouldDrawLabels);
+    
+    if (prevDrawPins != shouldDrawPins) circuit->setDrawAllPins(shouldDrawPins);
+    if (prevDrawLabels != shouldDrawLabels) circuit->setDrawLabels(shouldDrawLabels);
+    
+    ImGui::Separator();
+    ImGui::Text("Grid:");
+    bool showGrid = circuit->getShowGrid();
+    if (ImGui::Checkbox("Show Grid", &showGrid)) {
+        circuit->setShowGrid(showGrid);
+    }
+    bool snapToGrid = circuit->getSnapToGrid();
+    if (ImGui::Checkbox("Snap to Grid", &snapToGrid)) {
+        circuit->setSnapToGrid(snapToGrid);
+    }
+    float gridSize = circuit->getGridSize();
+    if (ImGui::SliderFloat("Grid Size", &gridSize, 10.0f, 50.0f, "%.0f")) {
+        circuit->setGridSize(gridSize);
+    }
+    
+    ImGui::Separator();
+    ImGui::Text("View Control:");
+    ImGui::TextDisabled("(Use Mouse Wheel to Zoom/Pan)");
+    
+    ImGui::End();
+}
+
+void UIManager::DrawComponentList() {
+    ImGui::Begin("Component List", &showComponentList);
+    const auto& components = circuit->GetComponents();
+    for (int i = 0; i < static_cast<int>(components.size()); i++) {
+        ImGui::PushID(i);
+        ImGui::Text("%s", components[i]->GetLabel().c_str());
+        ImGui::SameLine();
+        if (ImGui::Button("Delete")) {
+            circuit->removeComponent(components[i]->GetId());
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Go to")) {
+            circuit->GotoComponent(components[i]->GetId(), *window);
+        }
+        ImGui::PopID();
+    }
+    ImGui::End();
+}
+
+void UIManager::DrawContextMenu() {
+    static int contextMenuTargetId = -1;
+    if (circuit->getContextMenuComponentId() != -1) {
+        contextMenuTargetId = circuit->getContextMenuComponentId();
+        circuit->clearContextMenu();
+        ImGui::OpenPopup("ComponentContextMenu");
+    }
+    if (ImGui::BeginPopup("ComponentContextMenu")) {
+        Component* targetComp = circuit->getComponentById(contextMenuTargetId);
+        
+        if (ImGui::MenuItem("Delete")) {
+            circuit->removeComponent(contextMenuTargetId);
+            contextMenuTargetId = -1;
+        }
+        
+        if (targetComp && ImGui::BeginMenu("Plot Pin...")) {
+            const auto& inputs = targetComp->getInputs();
+            const auto& outputs = targetComp->getOutputs();
+            
+            bool hasPins = !inputs.empty() || !outputs.empty();
+            bool atMaxCapacity = pinPlotter.getPinCount() >= PinPlotter::MAX_PINS;
+            if (atMaxCapacity) {
+                ImGui::TextDisabled("Max %zu pins monitored", PinPlotter::MAX_PINS);
+                ImGui::Separator();
+            }
+            if (!inputs.empty()) {
+                ImGui::TextDisabled("Inputs:");
+                for (size_t i = 0; i < inputs.size(); ++i) {
+                    std::string label = targetComp->GetLabel() + " IN" + std::to_string(i);
+                    if (ImGui::MenuItem(label.c_str(), nullptr, false, !atMaxCapacity)) {
+                        if (pinPlotter.addPin(inputs[i].get(), label)) {
+                            showPinPlotter = true;
+                        }
+                    }
+                }
+            }
+            if (!outputs.empty()) {
+                if (!inputs.empty()) ImGui::Separator();
+                ImGui::TextDisabled("Outputs:");
+                for (size_t i = 0; i < outputs.size(); ++i) {
+                    std::string label = targetComp->GetLabel() + " OUT" + std::to_string(i);
+                    if (ImGui::MenuItem(label.c_str(), nullptr, false, !atMaxCapacity)) {
+                        if (pinPlotter.addPin(outputs[i].get(), label)) {
+                            showPinPlotter = true;
+                        }
+                    }
+                }
+            }
+            if (!hasPins)
+                ImGui::TextDisabled("No pins available");
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void UIManager::DrawStatus() {
+    if (!statusMessage.empty()) {
+        ImGui::Begin("Status", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("%s", statusMessage.c_str());
+        ImGui::End();
+    }
+}
+
+void UIManager::AddGate(int gateType, sf::Vector2f pos) {
+    switch (gateType) {
+        case 0: circuit->addComponent(std::make_unique<AndGate>(circuit->getNextId(), pos, numberInputs)); break;
+        case 1: circuit->addComponent(std::make_unique<OrGate>(circuit->getNextId(), pos, numberInputs)); break;
+        case 2: circuit->addComponent(std::make_unique<NotGate>(circuit->getNextId(), pos)); break;
+        case 3: circuit->addComponent(std::make_unique<NandGate>(circuit->getNextId(), pos, numberInputs)); break;
+        case 4: circuit->addComponent(std::make_unique<NorGate>(circuit->getNextId(), pos, numberInputs)); break;
+        case 5: circuit->addComponent(std::make_unique<XorGate>(circuit->getNextId(), pos, numberInputs)); break;
+        case 6: circuit->addComponent(std::make_unique<XnorGate>(circuit->getNextId(), pos, numberInputs)); break;
+    }
+}
+
+void UIManager::AddInput(int inputType, sf::Vector2f pos) {
+    switch (inputType) {
+        case 0: circuit->addComponent(std::make_unique<Button>(circuit->getNextId(), pos)); break;
+        case 1: circuit->addComponent(std::make_unique<InputComponent>(circuit->getNextId(), pos)); break;
+        case 2: circuit->addComponent(std::make_unique<ClockComponent>(circuit->getNextId(), pos)); break;
+    }
+}
+
+void UIManager::AddOutput(int outputType, sf::Vector2f pos) {
+    switch (outputType) {
+        case 0: circuit->addComponent(std::make_unique<OutputComponent>(circuit->getNextId(), pos)); break;
+        case 1: circuit->addComponent(std::make_unique<LEDComponent>(circuit->getNextId(), pos)); break;
+    }
+}
+
+void UIManager::AddOther(int otherType, sf::Vector2f pos) {
+    switch (otherType) {
+        case 0: circuit->addComponent(std::make_unique<SRFlipFlop>(circuit->getNextId(), pos)); break;
+        case 1: circuit->addComponent(std::make_unique<DFlipFlop>(circuit->getNextId(), pos)); break;
+        case 2: circuit->addComponent(std::make_unique<JKFlipFlop>(circuit->getNextId(), pos)); break;
+        case 3: circuit->addComponent(std::make_unique<TFlipFlop>(circuit->getNextId(), pos)); break;
+    }
+}
+
+void UIManager::AddCustomComponent(const std::string& name, sf::Vector2f pos) {
+    circuit->addComponent(std::make_unique<CustomComponent>(circuit->getNextId(), pos, name));
+}
+
+void UIManager::setStatusMessage(const std::string& message) {
+    statusMessage = message;
+    statusMessageTimer = 0.0f;
+}

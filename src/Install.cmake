@@ -1,12 +1,12 @@
 include(GNUInstallDirs)
 
-install(TARGETS imgui-sfml-example
+install(TARGETS LogicSimulator
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Installing is not easy, when we're dealing with shared libs
 if(NOT LINK_DEPS_STATIC)
-  set_target_properties(imgui-sfml-example PROPERTIES
+  set_target_properties(LogicSimulator PROPERTIES
     INSTALL_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR}
   )
 

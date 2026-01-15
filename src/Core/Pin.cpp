@@ -2,6 +2,8 @@
 #include "Component.h"
 #include <SFML/Graphics/CircleShape.hpp>
 
+const float Pin::RADIUS = 6.f;
+
 Pin::Pin(Component* parent, PinType type, sf::Vector2f relativePosition)
     : parent(parent), type(type), relativePosition(relativePosition), value(0)
 {
@@ -31,15 +33,11 @@ Component* Pin::getParent() const {
     return parent;
 }
 
-void Pin::draw(sf::RenderTarget& target) {
-    // Determine color based on state
-    sf::Color fillColor = (value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50); // Green for high, dark gray for low
+void Pin::draw(sf::RenderTarget& target) const {
+    const sf::Color fillColor = (value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50);
     
-    // Maybe different colors for Input vs Output?
-    // Inputs are usually where wires end, Outputs where wires start.
-    
-    sf::CircleShape shape(6.f);
-    shape.setOrigin({6.f, 6.f});
+    sf::CircleShape shape(RADIUS);
+    shape.setOrigin({RADIUS, RADIUS});
     shape.setPosition(getPosition());
     shape.setFillColor(fillColor);
     shape.setOutlineThickness(1.f);

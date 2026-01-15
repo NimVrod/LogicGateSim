@@ -24,6 +24,7 @@ public:
     void setNextId(int id); // Set the next component ID (for loading)
 
     void update();
+    void tickClocks();  // Toggle all clock components
     void draw(sf::RenderWindow& window);
     void setDrawAllPins(bool draw);
     void setDrawLabels(bool draw);
@@ -42,6 +43,9 @@ public:
     // Context menu
     int getContextMenuComponentId() const { return contextMenuComponentId; }
     void clearContextMenu() { contextMenuComponentId = -1; }
+    
+    // Get component by ID
+    Component* getComponentById(int id);
 
 private:
     std::vector<std::unique_ptr<Component>> components;

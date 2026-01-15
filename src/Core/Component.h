@@ -8,6 +8,27 @@
 #include <format>
 #include "Pin.h"
 
+enum class ComponentType {
+    AND,
+    OR,
+    NOT,
+    NAND,
+    NOR,
+    XOR,
+    XNOR,
+    BUTTON,
+    LED,
+    CLOCK,
+    CUSTOM,
+    SR_FF,
+    D_FF,
+    JK_FF,
+    T_FF,
+    INPUT,
+    OUTPUT,
+    UNDEFINED,
+};
+
 class Component {
 private:
     int id;
@@ -31,8 +52,10 @@ public:
     const std::vector<std::unique_ptr<Pin>>& getOutputs() const;
 
     int GetId() const;
+    virtual ComponentType GetType() {return ComponentType::UNDEFINED;}
 
 protected:
+    ComponentType type;
     sf::Vector2f position;
     std::vector<std::unique_ptr<Pin>> inputs;
     std::vector<std::unique_ptr<Pin>> outputs;
