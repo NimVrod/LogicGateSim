@@ -1,5 +1,5 @@
-#include "Pin.h"
-#include "Component.h"
+#include "../Include/Pin.h"
+#include "../Include/Component.h"
 #include <SFML/Graphics/CircleShape.hpp>
 
 const float Pin::RADIUS = 6.f;

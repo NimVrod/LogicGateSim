@@ -32,44 +32,28 @@ std::string NandGate::getType() const {
 }
 
 void NandGate::draw(sf::RenderTarget& target) {
-    // Ideally share code with AndGate using a common helper or inheritance geometry
-    // For now, duplicate standard AND shape logic and add bubble
-    
     sf::ConvexShape shape;
     float h = body.getSize().y;
-    float w = 60.f; // Standard width including curve, but excluding bubble normally?
-                    // Pins are at 0 and 60.
-                    // If we add bubble, we might want to shrink the D-shape slightly or let bubble extend past 60?
-                    // If bubble extends past 60, it covers the pin connection.
-                    // Let's make D-shape width 55 and bubble radius 5.
-    
-    float shapeW = 50.f; // D-shape width
+    float shapeW = 50.f;
     float bubbleRadius = 5.f;
-    
     sf::Vector2f pos = getPosition();
     
     std::vector<sf::Vector2f> points;
-    float curveStart = shapeW * 0.5f; // 25
+    float curveStart = shapeW * 0.5f;
     
-    // Top Left
     points.push_back(sf::Vector2f(0.f, 0.f));
     
-    // Curve
     int segments = 20;
     for (int i = 0; i <= segments; ++i) {
         float angle = -90.f + (180.f * i / segments);
         float rad = angle * 3.14159f / 180.f;
-        
         float rx = shapeW - curveStart;
         float ry = h / 2.f;
-        
         float x = curveStart + rx * std::cos(rad);
         float y = h / 2.f + ry * std::sin(rad);
-        
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Bottom Left
     points.push_back(sf::Vector2f(0.f, h));
     
     shape.setPointCount(points.size());
@@ -82,11 +66,7 @@ void NandGate::draw(sf::RenderTarget& target) {
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
-    // Bubble
     sf::CircleShape bubble(bubbleRadius);
-    // Position bubble at the tip of D-shape
-    // Tip is at (shapeW, h/2) local
-    // Bubble origin is top left
     bubble.setPosition(sf::Vector2f(pos.x + shapeW, pos.y + h/2.f - bubbleRadius));
     bubble.setFillColor(sf::Color::Transparent);
     bubble.setOutlineColor(sf::Color::White);

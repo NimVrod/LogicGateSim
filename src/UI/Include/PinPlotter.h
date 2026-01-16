@@ -2,7 +2,7 @@
 #include <deque>
 #include <string>
 #include <vector>
-#include "../../Core/Pin.h"
+#include "../../Core/Components/Include/Pin.h"
 #include "ToggableImGuiWindow.h"
 
 class PinPlotter : public ToggableImGuiWindow {

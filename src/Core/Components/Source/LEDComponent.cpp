@@ -1,6 +1,6 @@
 #include "../Include/LEDComponent.h"
 #include <format>
-#include "Core/ResourceManager.h"
+#include "../Include/ResourceManager.h"
 
 LEDComponent::LEDComponent(int id, sf::Vector2f position, sf::Color onColor)
     : Component(id, position), lit(false), onColor(onColor), offColor(sf::Color(60, 60, 60))
@@ -10,12 +10,10 @@ LEDComponent::LEDComponent(int id, sf::Vector2f position, sf::Color onColor)
     body.setOutlineColor(sf::Color::White);
     body.setOutlineThickness(2.f);
     
-    // Input pin on the left side
     addInput(sf::Vector2f(0.f, 15.f));
 }
 
 void LEDComponent::calculate() {
-    // Check if input is high
     if (!inputs.empty()) {
         lit = inputs[0]->getValue() >= 1;
     } else {
@@ -34,7 +32,6 @@ std::string LEDComponent::getType() const {
 void LEDComponent::draw(sf::RenderTarget& target) {
     sf::Vector2f pos = getPosition();
     
-    // Set color based on state
     if (lit) {
         body.setFillColor(onColor);
     } else {
@@ -47,7 +44,7 @@ void LEDComponent::draw(sf::RenderTarget& target) {
 
 void LEDComponent::drawLabel(sf::RenderTarget& target) {
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);

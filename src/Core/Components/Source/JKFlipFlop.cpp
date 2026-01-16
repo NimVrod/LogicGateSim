@@ -1,23 +1,16 @@
 #include "../Include/JKFlipFlop.h"
 #include <format>
-#include "Core/ResourceManager.h"
+#include "../Include/ResourceManager.h"
 
 JKFlipFlop::JKFlipFlop(int id, sf::Vector2f position)
-    : Component(id, position), q(false), lastClk(false)
+    : FlipFlop(id, position, sf::Vector2f(60.f, 80.f))
 {
-    body.setFillColor(sf::Color(120, 80, 120));
-    body.setSize(sf::Vector2f(60.f, 80.f));
-    body.setOutlineColor(sf::Color::White);
-    body.setOutlineThickness(2.f);
+    addInput(sf::Vector2f(0.f, 15.f));
+    addInput(sf::Vector2f(0.f, 40.f));
+    addInput(sf::Vector2f(0.f, 65.f));
     
-    // Inputs: J, CLK, K
-    addInput(sf::Vector2f(0.f, 15.f));   // J
-    addInput(sf::Vector2f(0.f, 40.f));   // CLK
-    addInput(sf::Vector2f(0.f, 65.f));   // K
-    
-    // Outputs: Q, Q'
-    addOutput(sf::Vector2f(60.f, 25.f)); // Q
-    addOutput(sf::Vector2f(60.f, 55.f)); // Q'
+    addOutput(sf::Vector2f(60.f, 25.f));
+    addOutput(sf::Vector2f(60.f, 55.f));
 }
 
 void JKFlipFlop::calculate() {
@@ -27,16 +20,14 @@ void JKFlipFlop::calculate() {
     bool clk = inputs[1]->getValue() >= 1;
     bool k = inputs[2]->getValue() >= 1;
     
-    // Rising edge detection
     if (clk && !lastClk) {
         if (j && !k) {
             q = true;
         } else if (!j && k) {
             q = false;
         } else if (j && k) {
-            q = !q;  // Toggle
+            q = !q;
         }
-        // !j && !k - hold state (do nothing)
     }
     
     lastClk = clk;
@@ -55,27 +46,9 @@ std::string JKFlipFlop::getType() const {
     return "JKFlipFlop";
 }
 
-void JKFlipFlop::draw(sf::RenderTarget& target) {
-    sf::Vector2f pos = getPosition();
-    
-    if (q) {
-        body.setFillColor(sf::Color(160, 100, 160));
-    } else {
-        body.setFillColor(sf::Color(100, 60, 100));
-    }
-    
-    body.setPosition(pos);
-    target.draw(body);
-    
+void JKFlipFlop::drawPinLabels(sf::RenderTarget& target, sf::Vector2f pos) {
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
-    
-    sf::Text title(font);
-    title.setString("JK");
-    title.setCharacterSize(14);
-    title.setFillColor(sf::Color::White);
-    title.setPosition(sf::Vector2f(pos.x + 20.f, pos.y + 30.f));
-    target.draw(title);
+    sf::Font& font = rm.getDefaultFont();
     
     sf::Text pinLabel(font);
     pinLabel.setCharacterSize(10);
@@ -100,19 +73,4 @@ void JKFlipFlop::draw(sf::RenderTarget& target) {
     pinLabel.setString("Q'");
     pinLabel.setPosition(sf::Vector2f(pos.x + 45.f, pos.y + 48.f));
     target.draw(pinLabel);
-}
-
-void JKFlipFlop::drawLabel(sf::RenderTarget& target) {
-    ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
-    sf::Text text(font);
-    text.setString(GetLabel());
-    text.setCharacterSize(14);
-    text.setFillColor(sf::Color::White);
-    text.setPosition(sf::Vector2f(position.x, position.y + body.getSize().y + 5.f));
-    target.draw(text);
-}
-
-sf::FloatRect JKFlipFlop::getBounds() const {
-    return sf::FloatRect(position, body.getSize());
 }

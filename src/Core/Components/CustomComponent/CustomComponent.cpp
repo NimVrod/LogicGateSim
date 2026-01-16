@@ -1,25 +1,23 @@
-#include "../Include/CustomComponent.h"
-#include "../CustomComponent/CustomComponentManager.h"
-#include "../CustomComponent/CustomComponentDefinition.h"
+#include "CustomComponent.h"
+#include "CustomComponentManager.h"
+#include "CustomComponentDefinition.h"
 #include "../../../Simulation/Circuit.h"
 #include "../../../Serialization/CircuitSerializer.h"
 #include "../Include/InputComponent.h"
 #include "../Include/OutputComponent.h"
-#include "Core/ResourceManager.h"
+#include "../Include/ResourceManager.h"
 #include <format>
 #include <algorithm>
 
 CustomComponent::CustomComponent(int id, sf::Vector2f position, const std::string& definitionName)
     : Component(id, position), definitionName(definitionName), internalCircuit(nullptr)
 {
-    // Get the definition from the manager
     const auto* def = CustomComponentManager::getInstance().getDefinition(definitionName);
     if (def) {
         initFromDefinition(def);
     }
     
-    // Set up the body appearance
-    body.setFillColor(sf::Color(80, 80, 120));  // Purple-ish color for custom components
+    body.setFillColor(sf::Color(80, 80, 120));
     body.setOutlineColor(sf::Color::White);
     body.setOutlineThickness(2.f);
 }
@@ -29,20 +27,15 @@ CustomComponent::~CustomComponent() = default;
 void CustomComponent::initFromDefinition(const CustomComponentDefinition* def) {
     if (!def) return;
     
-    // Create the internal circuit
     internalCircuit = std::make_unique<Circuit>();
     
-    // Load the circuit from the XML string using CircuitSerializer
     if (!CircuitSerializer::loadFromXmlString(*internalCircuit, def->circuitXml)) {
         internalCircuit.reset();
         return;
     }
     
-    // Cache internal Input/Output components
     cacheInternalComponents();
     
-    // Create external pins based on internal Input/Output components
-    // Calculate body size based on number of pins
     int maxPins = std::max(static_cast<int>(internalInputs.size()), 
                            static_cast<int>(internalOutputs.size()));
     maxPins = std::max(maxPins, 1);
@@ -51,13 +44,11 @@ void CustomComponent::initFromDefinition(const CustomComponentDefinition* def) {
     float width = 80.f;
     body.setSize(sf::Vector2f(width, height));
     
-    // Add input pins on the left side
     for (size_t i = 0; i < internalInputs.size(); ++i) {
         float yOffset = 15.f + i * 25.f;
         addInput(sf::Vector2f(0.f, yOffset));
     }
     
-    // Add output pins on the right side
     for (size_t i = 0; i < internalOutputs.size(); ++i) {
         float yOffset = 15.f + i * 25.f;
         addOutput(sf::Vector2f(width, yOffset));
@@ -78,7 +69,6 @@ void CustomComponent::cacheInternalComponents() {
         }
     }
     
-    // Sort by index
     std::sort(internalInputs.begin(), internalInputs.end(),
         [](InputComponent* a, InputComponent* b) {
             return a->getIndex() < b->getIndex();
@@ -93,21 +83,17 @@ void CustomComponent::cacheInternalComponents() {
 void CustomComponent::calculate() {
     if (!internalCircuit || !isValid()) return;
     
-    // Step 1: Copy values from external input pins to internal InputComponents
     for (size_t i = 0; i < inputs.size() && i < internalInputs.size(); ++i) {
         int value = inputs[i]->getValue();
         internalInputs[i]->setExternalValue(value);
     }
     
-    // Step 2: Update the internal circuit multiple times to ensure full propagation
-    // The number of passes should be at least the depth of the circuit
     int numComponents = static_cast<int>(internalCircuit->GetComponents().size());
-    int passes = std::max(numComponents, 3);  // At least 3 passes for basic circuits
+    int passes = std::max(numComponents, 3);
     for (int p = 0; p < passes; ++p) {
         internalCircuit->update();
     }
     
-    // Step 3: Copy values from internal OutputComponents to external output pins
     for (size_t i = 0; i < outputs.size() && i < internalOutputs.size(); ++i) {
         int value = internalOutputs[i]->getOutputValue();
         outputs[i]->setValue(value);
@@ -125,19 +111,16 @@ std::string CustomComponent::getType() const {
 void CustomComponent::draw(sf::RenderTarget& target) {
     sf::Vector2f pos = getPosition();
     
-    // Draw the body
     body.setPosition(pos);
     target.draw(body);
     
-    // Draw the component name inside the box
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(definitionName);
     text.setCharacterSize(11);
     text.setFillColor(sf::Color::White);
     
-    // Center the text
     sf::FloatRect textBounds = text.getLocalBounds();
     float textX = pos.x + (body.getSize().x - textBounds.size.x) / 2.f;
     float textY = pos.y + (body.getSize().y - textBounds.size.y) / 2.f - 5.f;
@@ -147,7 +130,7 @@ void CustomComponent::draw(sf::RenderTarget& target) {
 
 void CustomComponent::drawLabel(sf::RenderTarget& target) {
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);

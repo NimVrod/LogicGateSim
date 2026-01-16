@@ -3,14 +3,11 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 
 NotGate::NotGate(int id, sf::Vector2f position)
-    : Gate(id, position, 1) // NOT gate always has 1 input
+    : Gate(id, position, 1)
 {
-    body.setFillColor(sf::Color::Transparent); // Hide default rect
-    
-    // Fix body size to match drawing height (40)
+    body.setFillColor(sf::Color::Transparent);
     body.setSize(sf::Vector2f(60.f, 40.f));
     
-    // Adjust pin positions to center of 40-height
     if (!inputs.empty()) {
         inputs[0]->setRelativePosition(sf::Vector2f(0.f, 20.f));
     }
@@ -33,14 +30,11 @@ std::string NotGate::getType() const {
 }
 
 void NotGate::draw(sf::RenderTarget& target) {
-    // Draw Triangle
     sf::ConvexShape triangle;
     triangle.setPointCount(3);
     
-    float h = 40.f; // Standard height
-    float w = 40.f; // Width of triangle
-    
-    // Adjust based on actual position
+    float h = 40.f;
+    float w = 40.f;
     sf::Vector2f pos = getPosition();
     
     triangle.setPoint(0, sf::Vector2f(0, 0));
@@ -52,7 +46,6 @@ void NotGate::draw(sf::RenderTarget& target) {
     triangle.setOutlineColor(sf::Color::White);
     triangle.setOutlineThickness(2.f);
 
-    // Draw Bubble
     float bubbleRadius = 5.f;
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(pos.x + w, pos.y + h/2.f - bubbleRadius));

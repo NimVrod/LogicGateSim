@@ -9,7 +9,6 @@ void Circuit::addComponent(std::unique_ptr<Component> component) {
     components.push_back(std::move(component));
     draggedComponent = components.back().get();
     dragOffset = sf::Vector2f(0.f, 0.f);
-    //TODO: Add snap to mouse world pos on start
     state = circuitState::DraggingComponent;
 }
 
@@ -52,7 +51,6 @@ void Circuit::update() {
 }
 
 void Circuit::draw(sf::RenderWindow& window) {
-    // Draw grid first (background)
     if (showGrid) {
         drawGrid(window);
     }
@@ -96,13 +94,11 @@ void Circuit::drawGrid(sf::RenderWindow& window) {
     float top = viewCenter.y - viewSize.y / 2;
     float bottom = viewCenter.y + viewSize.y / 2;
     
-    // Snap to grid lines
     float startX = std::floor(left / gridSize) * gridSize;
     float startY = std::floor(top / gridSize) * gridSize;
     
     sf::Color gridColor(50, 50, 50);
     
-    // Draw vertical lines
     for (float x = startX; x <= right; x += gridSize) {
         sf::Vertex line[] = {
             sf::Vertex{sf::Vector2f(x, top), gridColor},
@@ -111,7 +107,6 @@ void Circuit::drawGrid(sf::RenderWindow& window) {
         window.draw(line, 2, sf::PrimitiveType::Lines);
     }
     
-    // Draw horizontal lines
     for (float y = startY; y <= bottom; y += gridSize) {
         sf::Vertex line[] = {
             sf::Vertex{sf::Vector2f(left, y), gridColor},
@@ -138,7 +133,7 @@ void Circuit::setDrawLabels(bool draw) {
 }
 
 Pin* Circuit::getPinAt(sf::Vector2f pos) {
-    auto radius = Pin::RADIUS + 2.0f; // Slightly larger for easier clicking
+    auto radius = Pin::RADIUS + 2.0f;
     for (auto& comp : components) {
         for (auto& pin : comp->getInputs()) {
             sf::Vector2f pinPos = pin->getPosition();
@@ -191,22 +186,17 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         switch (state) {
             case circuitState::Idle:
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                    // Check for pin click first (for wire creation)
                     if (Pin* clickedPin = getPinAt(worldPos)) {
                         selectedPin = clickedPin;
                         state = circuitState::CreatingWire;
                         return;
                     }
 
-                    // Check for component click (for dragging) (start from end for topmost)
                     for (auto & component : std::ranges::reverse_view(components)) {
                         Component* comp = component.get();
                         if (comp->getBounds().contains(worldPos)) {
-                            // Check if the component is clickable (some components might not be)
                             if (auto* button = dynamic_cast<Button*>(comp)) {
-                                // If it's a button, toggle its state only if clicking in center
                                 sf::FloatRect bounds = button->getBounds();
-                                // Create a smaller inner rect (60% of size, centered)
                                 float margin = bounds.size.x * 0.2f;
                                 sf::FloatRect innerBounds(
                                     sf::Vector2f(bounds.position.x + margin, bounds.position.y + margin),
@@ -216,7 +206,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                                     button->toggle();
                                     return;
                                 }
-                                // Fall through to dragging if clicking on edges
                             }
                             draggedComponent = comp;
                             dragOffset = worldPos - comp->getPosition();
@@ -226,7 +215,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                     }
                 }
                 else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
-                    // Right-click for context menu
                     for (auto & component : std::ranges::reverse_view(components)) {
                         Component* comp = component.get();
                         if (comp->getBounds().contains(worldPos)) {
@@ -246,7 +234,6 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                     state = circuitState::Idle;
                 }
                 else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
-                    // Cancel wire creation
                     selectedPin = nullptr;
                     state = circuitState::Idle;
                 }
@@ -308,7 +295,6 @@ void Circuit::removeComponent(int id) {
                                      wire->getEndPin()->getParent() == compToRemove;
                           });
 
-            // Clear references if the component being removed is selected/dragged
             if (draggedComponent == compToRemove) {
                 draggedComponent = nullptr;
             }
@@ -337,11 +323,19 @@ const std::vector<std::unique_ptr<Wire>>& Circuit::getWires() const {
     return wires;
 }
 
-Component* Circuit::getComponentById(int id) {
+Component* Circuit::getComponentById(int id) const {
     for (auto& comp : components) {
         if (comp->GetId() == id) {
             return comp.get();
         }
     }
     return nullptr;
+}
+
+template <typename T, typename... Args>
+T* Circuit::addComponent(Args&&... args) {
+    auto component = std::make_unique<T>(getNextId(), std::forward<Args>(args)...);
+    T* ptr = component.get();
+    addComponent(std::move(component));
+    return ptr;
 }

@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "../Core/Component.h"
-#include "../Core/Wire.h"
+#include "../Core/Components/Include/Component.h"
+#include "../Core/Components/Include/Wire.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 
 enum class circuitState {
@@ -14,6 +14,8 @@ class Circuit {
     friend class CircuitSerializer;
 public:
     void addComponent(std::unique_ptr<Component> component);
+    template <typename T, typename... Args>
+    T* addComponent(Args&&... args);
     void addWire(Pin* start, Pin* end);
     void clear();
     const std::vector<std::unique_ptr<Component>>& GetComponents() const;
@@ -45,7 +47,7 @@ public:
     void clearContextMenu() { contextMenuComponentId = -1; }
     
     // Get component by ID
-    Component* getComponentById(int id);
+    Component* getComponentById(int id) const;
 
 private:
     std::vector<std::unique_ptr<Component>> components;

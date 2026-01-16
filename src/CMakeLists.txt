@@ -1,8 +1,9 @@
 add_executable(LogicSimulator
   main.cpp
-  Core/Component.cpp
-  Core/Pin.cpp
-  Core/Wire.cpp
+        Core/Components/Source/Component.cpp
+        Core/Components/Source/Pin.cpp
+        Core/Components/Source/Wire.cpp
+        Core/Components/Source/ComponentFactory.cpp Core/Components/Include/ComponentFactory.h
   "Core/Components/Source/Button.cpp" "Core/Components/Include/Button.h" "Core/Components/Include/Gate.h" "Core/Components/Source/Gate.cpp"
   "Core/Components/Source/AndGate.cpp" "Core/Components/Include/AndGate.h"
   "Core/Components/Source/OrGate.cpp" "Core/Components/Include/OrGate.h"
@@ -13,18 +14,19 @@ add_executable(LogicSimulator
   "Core/Components/Source/XnorGate.cpp" "Core/Components/Include/XnorGate.h"
   "Core/Components/Source/InputComponent.cpp" "Core/Components/Include/InputComponent.h"
   "Core/Components/Source/OutputComponent.cpp" "Core/Components/Include/OutputComponent.h"
-  "Core/Components/Source/CustomComponent.cpp" "Core/Components/Include/CustomComponent.h"
+  "Core/Components/CustomComponent/CustomComponent.cpp" "Core/Components/CustomComponent/CustomComponent.h"
   "Core/Components/Source/ClockComponent.cpp" "Core/Components/Include/ClockComponent.h"
   "Core/Components/Source/LEDComponent.cpp" "Core/Components/Include/LEDComponent.h"
   "Core/Components/Source/SRFlipFlop.cpp" "Core/Components/Include/SRFlipFlop.h"
   "Core/Components/Source/DFlipFlop.cpp" "Core/Components/Include/DFlipFlop.h"
   "Core/Components/Source/JKFlipFlop.cpp" "Core/Components/Include/JKFlipFlop.h"
   "Core/Components/Source/TFlipFlop.cpp" "Core/Components/Include/TFlipFlop.h"
+  "Core/Components/Source/FlipFlop.cpp" "Core/Components/Include/FlipFlop.h"
   "Core/Components/CustomComponent/CustomComponentManager.cpp" "Core/Components/CustomComponent/CustomComponentManager.h"
   "Core/Components/CustomComponent/CustomComponentDefinition.h"
         Simulation/Circuit.cpp
-        Core/ResourceManager.cpp
-        Core/ResourceManager.h
+        Core/Components/Source/ResourceManager.cpp
+        Core/Components/Include/ResourceManager.h
         Serialization/CircuitSerializer.cpp
         UI/Source/ComponentPreview.cpp UI/Include/ComponentPreview.h
         UI/Source/UIManager.cpp UI/Include/UIManager.h

@@ -1,6 +1,6 @@
 #include "../Include/Button.h"
 #include <format>
-#include "Core/ResourceManager.h"
+#include "../Include/ResourceManager.h"
 
 Button::Button(int id, sf::Vector2f position, int output)
 	: Component(id, position)
@@ -27,7 +27,7 @@ void Button::draw(sf::RenderTarget& target) {
 	target.draw(body);
 	
 	ResourceManager& rm = ResourceManager::getInstance();
-	sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+	sf::Font& font = rm.getDefaultFont();
 	sf::Text text(font);
 	text.setString(state ? "ON" : "OFF");
 	text.setCharacterSize(12);
@@ -38,7 +38,7 @@ void Button::draw(sf::RenderTarget& target) {
 
 void Button::drawLabel(sf::RenderTarget& target) {
 	ResourceManager& rm = ResourceManager::getInstance();
-	sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+	sf::Font& font = rm.getDefaultFont();
 	sf::Text text(font);
 	text.setString(GetLabel());
 	text.setCharacterSize(14);

@@ -1,6 +1,6 @@
-#include "Component.h"
+#include "../Include/Component.h"
 
-#include "ResourceManager.h"
+#include "../Include/ResourceManager.h"
 #include "SFML/Graphics/Text.hpp"
 
 
@@ -11,7 +11,6 @@ Component::Component(int id, sf::Vector2f position)
 }
 
 void Component::draw(sf::RenderTarget& target) {
-    // Base draw - subclasses handle their own drawing
 }
 
 void Component::drawPins(sf::RenderTarget& target) {
@@ -25,7 +24,7 @@ void Component::drawPins(sf::RenderTarget& target) {
 
 void Component::drawLabel(sf::RenderTarget& target) {
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);

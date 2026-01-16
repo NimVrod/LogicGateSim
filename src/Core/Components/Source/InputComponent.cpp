@@ -1,22 +1,19 @@
 #include "../Include/InputComponent.h"
 #include <format>
-#include "Core/ResourceManager.h"
+#include "../Include/ResourceManager.h"
 
 InputComponent::InputComponent(int id, sf::Vector2f position, int index)
     : Component(id, position), index(index), externalValue(0)
 {
-    // InputComponent has one output pin (provides value to the circuit)
-    body.setFillColor(sf::Color(50, 150, 50));  // Green color for inputs
+    body.setFillColor(sf::Color(50, 150, 50));
     body.setSize(sf::Vector2f(50.f, 30.f));
     body.setOutlineColor(sf::Color::White);
     body.setOutlineThickness(2.f);
     
-    // Output pin on the right side
     addOutput(sf::Vector2f(50.f, 15.f));
 }
 
 void InputComponent::calculate() {
-    // Pass through the external value to the output pin
     for (const auto& output : outputs) {
         output->setValue(externalValue);
     }
@@ -31,17 +28,15 @@ std::string InputComponent::GetLabel() {
 }
 
 std::string InputComponent::getType() const {
-    return "InputComponent";
+    return "Input Pin";
 }
 
 void InputComponent::draw(sf::RenderTarget& target) {
     sf::Vector2f pos = getPosition();
     
-    // Draw the body
     body.setPosition(pos);
     target.draw(body);
     
-    // Draw arrow pointing right (into the circuit)
     sf::ConvexShape arrow;
     arrow.setPointCount(3);
     arrow.setPoint(0, sf::Vector2f(0.f, 0.f));
@@ -51,9 +46,8 @@ void InputComponent::draw(sf::RenderTarget& target) {
     arrow.setFillColor(sf::Color::White);
     target.draw(arrow);
     
-    // Draw the index label inside the box
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(std::format("In {}", index));
     text.setCharacterSize(12);
@@ -64,7 +58,7 @@ void InputComponent::draw(sf::RenderTarget& target) {
 
 void InputComponent::drawLabel(sf::RenderTarget& target) {
     ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getFont("assets/ARIAL.TTF");
+    sf::Font& font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);

@@ -1,24 +1,9 @@
 #include "../Include/UIManager.h"
 #include <nfd.h>
 #include "../../Serialization/CircuitSerializer.h"
-#include "../../Core/ResourceManager.h"
-#include "../../Core/Components/Include/Button.h"
-#include "../../Core/Components/Include/AndGate.h"
-#include "../../Core/Components/Include/OrGate.h"
-#include "../../Core/Components/Include/NotGate.h"
-#include "../../Core/Components/Include/NandGate.h"
-#include "../../Core/Components/Include/NorGate.h"
-#include "../../Core/Components/Include/XorGate.h"
-#include "../../Core/Components/Include/XnorGate.h"
-#include "../../Core/Components/Include/InputComponent.h"
-#include "../../Core/Components/Include/OutputComponent.h"
-#include "../../Core/Components/Include/CustomComponent.h"
-#include "../../Core/Components/Include/ClockComponent.h"
-#include "../../Core/Components/Include/LEDComponent.h"
-#include "../../Core/Components/Include/SRFlipFlop.h"
-#include "../../Core/Components/Include/DFlipFlop.h"
-#include "../../Core/Components/Include/JKFlipFlop.h"
-#include "../../Core/Components/Include/TFlipFlop.h"
+#include "../../Core/Components/Include/ResourceManager.h"
+#include "../../Core/Components/Include/ComponentFactory.h"
+#include "../../Core/Components/CustomComponent/CustomComponent.h"
 #include "../../Core/Components/CustomComponent/CustomComponentManager.h"
 #include "../../Core/Components/CustomComponent/CustomComponentDefinition.h"
 
@@ -197,8 +182,8 @@ void UIManager::DrawMenuBar() {
                 bool hasInputs = false;
                 bool hasOutputs = false;
                 for (const auto& comp : circuit->GetComponents()) {
-                    if (comp->GetType() == ComponentType::INPUT) hasInputs = true;
-                    if (comp->GetType() == ComponentType::OUTPUT) hasOutputs = true;
+                    if (comp->getType() == "Input Pin") hasInputs = true;
+                    if (comp->getType() == "Output Pin") hasOutputs = true;
                 }
                 
                 if (!hasInputs && !hasOutputs) {
@@ -288,8 +273,8 @@ void UIManager::DrawMenuBar() {
         
         int inputCount = 0, outputCount = 0;
         for (const auto& comp : circuit->GetComponents()) {
-            if (comp->GetType() == ComponentType::INPUT) inputCount++;
-            if (comp->GetType() == ComponentType::OUTPUT) outputCount++;
+            if (comp->getType() == "Input Pin") inputCount++;
+            if (comp->getType() == "Output Pin") outputCount++;
         }
         ImGui::Text("Inputs: %d, Outputs: %d", inputCount, outputCount);
         
@@ -338,17 +323,10 @@ void UIManager::DrawComponentPicker() {
             }
 
             int inputs = (selectedGate == 2) ? 1 : numberInputs;
-            ComponentType previewType = ComponentType::UNDEFINED;
-            switch (selectedGate) {
-                case 0: previewType = ComponentType::AND; break;
-                case 1: previewType = ComponentType::OR; break;
-                case 2: previewType = ComponentType::NOT; break;
-                case 3: previewType = ComponentType::NAND; break;
-                case 4: previewType = ComponentType::NOR; break;
-                case 5: previewType = ComponentType::XOR; break;
-                case 6: previewType = ComponentType::XNOR; break;
+            static const char* gateTypeNames[] = { "AndGate", "OrGate", "NotGate", "NandGate", "NorGate", "XorGate", "XnorGate" };
+            if (selectedGate >= 0 && selectedGate < 7) {
+                componentPreview.setComponentType(gateTypeNames[selectedGate], inputs);
             }
-            componentPreview.setComponentType(previewType, inputs);
 
             ImGui::EndTabItem();
         }
@@ -360,13 +338,10 @@ void UIManager::DrawComponentPicker() {
             if (ImGui::Button("Add Input", ImVec2(-1, 0))) {
                 AddInput(selectedInput, sf::Vector2f(100, 100));
             }
-            ComponentType previewType = ComponentType::UNDEFINED;
-            switch (selectedInput) {
-                case 0: previewType = ComponentType::BUTTON; break;
-                case 1: previewType = ComponentType::INPUT; break;
-                case 2: previewType = ComponentType::CLOCK; break;
+            static const char* inputTypeNames[] = { "Button", "Input Pin", "ClockComponent" };
+            if (selectedInput >= 0 && selectedInput < 3) {
+                componentPreview.setComponentType(inputTypeNames[selectedInput], 1);
             }
-            componentPreview.setComponentType(previewType, 1);
 
             ImGui::EndTabItem();
         }
@@ -379,12 +354,10 @@ void UIManager::DrawComponentPicker() {
                 AddOutput(selectedOutput, sf::Vector2f(100, 100));
             }
 
-            ComponentType previewType = ComponentType::UNDEFINED;
-            switch (selectedOutput) {
-                case 0: previewType = ComponentType::OUTPUT; break;
-                case 1: previewType = ComponentType::LED; break;
+            static const char* outputTypeNames[] = { "Output Pin", "LEDComponent" };
+            if (selectedOutput >= 0 && selectedOutput < 2) {
+                componentPreview.setComponentType(outputTypeNames[selectedOutput], 1);
             }
-            componentPreview.setComponentType(previewType, 1);
 
             ImGui::EndTabItem();
         }
@@ -397,14 +370,10 @@ void UIManager::DrawComponentPicker() {
                 AddOther(selectedOther, sf::Vector2f(100, 100));
             }
 
-            ComponentType previewType = ComponentType::UNDEFINED;
-            switch (selectedOther) {
-                case 0: previewType = ComponentType::SR_FF; break;
-                case 1: previewType = ComponentType::D_FF; break;
-                case 2: previewType = ComponentType::JK_FF; break;
-                case 3: previewType = ComponentType::T_FF; break;
+            static const char* otherTypeNames[] = { "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop" };
+            if (selectedOther >= 0 && selectedOther < 4) {
+                componentPreview.setComponentType(otherTypeNames[selectedOther], 1);
             }
-            componentPreview.setComponentType(previewType, 1);
 
             ImGui::EndTabItem();
         }
@@ -439,7 +408,7 @@ void UIManager::DrawComponentPicker() {
                     AddCustomComponent(names[selectedCustom], sf::Vector2f(100, 100));
                 }
                 
-                componentPreview.setComponentType(ComponentType::CUSTOM, def ? def->numInputs : 0);
+                componentPreview.setComponentType(names[selectedCustom], def ? def->numInputs : 0);
             }
             
             ImGui::EndTabItem();
@@ -599,43 +568,66 @@ void UIManager::DrawStatus() {
 }
 
 void UIManager::AddGate(int gateType, sf::Vector2f pos) {
-    switch (gateType) {
-        case 0: circuit->addComponent(std::make_unique<AndGate>(circuit->getNextId(), pos, numberInputs)); break;
-        case 1: circuit->addComponent(std::make_unique<OrGate>(circuit->getNextId(), pos, numberInputs)); break;
-        case 2: circuit->addComponent(std::make_unique<NotGate>(circuit->getNextId(), pos)); break;
-        case 3: circuit->addComponent(std::make_unique<NandGate>(circuit->getNextId(), pos, numberInputs)); break;
-        case 4: circuit->addComponent(std::make_unique<NorGate>(circuit->getNextId(), pos, numberInputs)); break;
-        case 5: circuit->addComponent(std::make_unique<XorGate>(circuit->getNextId(), pos, numberInputs)); break;
-        case 6: circuit->addComponent(std::make_unique<XnorGate>(circuit->getNextId(), pos, numberInputs)); break;
+    static const char* gateTypeMap[] = {
+        "AndGate", "OrGate", "NotGate",
+        "NandGate", "NorGate", "XorGate", "XnorGate"
+    };
+    if (gateType >= 0 && gateType < 7) {
+        circuit->addComponent(ComponentFactory::create(gateTypeMap[gateType], circuit->getNextId(), pos, numberInputs));
     }
 }
 
 void UIManager::AddInput(int inputType, sf::Vector2f pos) {
-    switch (inputType) {
-        case 0: circuit->addComponent(std::make_unique<Button>(circuit->getNextId(), pos)); break;
-        case 1: circuit->addComponent(std::make_unique<InputComponent>(circuit->getNextId(), pos)); break;
-        case 2: circuit->addComponent(std::make_unique<ClockComponent>(circuit->getNextId(), pos)); break;
+    static const char* inputTypeMap[] = {
+        "Button", "Input Pin", "ClockComponent"
+    };
+    if (inputType >= 0 && inputType < 3) {
+        int thirdParam = 2; // Default for gates
+        if (inputType == 1) { // Input Pin
+            // Calculate the next index based on existing Input Pins
+            int inputIndex = 0;
+            for (const auto& comp : circuit->GetComponents()) {
+                if (comp->getType() == "Input Pin") {
+                    inputIndex++;
+                }
+            }
+            thirdParam = inputIndex;
+        }
+        circuit->addComponent(ComponentFactory::create(inputTypeMap[inputType], circuit->getNextId(), pos, thirdParam));
     }
 }
 
 void UIManager::AddOutput(int outputType, sf::Vector2f pos) {
-    switch (outputType) {
-        case 0: circuit->addComponent(std::make_unique<OutputComponent>(circuit->getNextId(), pos)); break;
-        case 1: circuit->addComponent(std::make_unique<LEDComponent>(circuit->getNextId(), pos)); break;
+    static const char* outputTypeMap[] = {
+        "Output Pin", "LEDComponent"
+    };
+    if (outputType >= 0 && outputType < 2) {
+        int thirdParam = 2; // Default
+        if (outputType == 0) { // Output Pin
+            // Calculate the next index based on existing Output Pins
+            int outputIndex = 0;
+            for (const auto& comp : circuit->GetComponents()) {
+                if (comp->getType() == "Output Pin") {
+                    outputIndex++;
+                }
+            }
+            thirdParam = outputIndex;
+        }
+        circuit->addComponent(ComponentFactory::create(outputTypeMap[outputType], circuit->getNextId(), pos, thirdParam));
     }
 }
 
 void UIManager::AddOther(int otherType, sf::Vector2f pos) {
-    switch (otherType) {
-        case 0: circuit->addComponent(std::make_unique<SRFlipFlop>(circuit->getNextId(), pos)); break;
-        case 1: circuit->addComponent(std::make_unique<DFlipFlop>(circuit->getNextId(), pos)); break;
-        case 2: circuit->addComponent(std::make_unique<JKFlipFlop>(circuit->getNextId(), pos)); break;
-        case 3: circuit->addComponent(std::make_unique<TFlipFlop>(circuit->getNextId(), pos)); break;
+    static const char* otherTypeMap[] = {
+        "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop"
+    };
+    if (otherType >= 0 && otherType < 4) {
+        circuit->addComponent(ComponentFactory::create(otherTypeMap[otherType], circuit->getNextId(), pos, 2));
     }
 }
 
 void UIManager::AddCustomComponent(const std::string& name, sf::Vector2f pos) {
-    circuit->addComponent(std::make_unique<CustomComponent>(circuit->getNextId(), pos, name));
+    circuit->addComponent(ComponentFactory::createCustom(circuit->getNextId(), pos, name));
 }
 
 void UIManager::setStatusMessage(const std::string& message) {

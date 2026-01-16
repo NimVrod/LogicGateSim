@@ -11,7 +11,6 @@ XnorGate::XnorGate(int id, sf::Vector2f position, int numInputs)
 }
 
 void XnorGate::calculate() {
-    // XNOR = !XOR
     int ones = 0;
     for (const auto& input : inputs) {
         if (input->getValue() == 1) {
@@ -37,7 +36,7 @@ void XnorGate::draw(sf::RenderTarget& target) {
     sf::ConvexShape shape;
     
     float shift = 8.f; 
-    float w = 55.f - shift; // Shorter for bubble
+    float w = 55.f - shift;
     float h = body.getSize().y;
     sf::Vector2f pos = getPosition();
     float bubbleRadius = 5.f;
@@ -47,21 +46,20 @@ void XnorGate::draw(sf::RenderTarget& target) {
     std::vector<sf::Vector2f> points;
     int segments = 20;
 
-    // Top Edge
     for (int i = 0; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*(w*0.6f) + t*t*w;
         float y = (1-t)*(1-t)*0 + 2*(1-t)*t*0 + t*t*(h/2.f);
         points.push_back(sf::Vector2f(x, y));
     }
-    // Bottom Edge
+
     for (int i = 1; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*w + 2*(1-t)*t*(w*0.6f) + t*t*0;
         float y = (1-t)*(1-t)*(h/2.f) + 2*(1-t)*t*h + t*t*h;
         points.push_back(sf::Vector2f(x, y));
     }
-    // Back Curve
+
     for (int i = 1; i < segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*15.f + t*t*0;
@@ -81,7 +79,6 @@ void XnorGate::draw(sf::RenderTarget& target) {
     
     target.draw(shape);
     
-    // Extra Curve
     sf::VertexArray extraCurve(sf::PrimitiveType::LineStrip, segments + 1);
     for (int i = 0; i <= segments; ++i) {
          float t = (float)i / segments;
@@ -92,7 +89,6 @@ void XnorGate::draw(sf::RenderTarget& target) {
     }
     target.draw(extraCurve);
     
-    // Bubble
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(shapePos.x + w, shapePos.y + h/2.f - bubbleRadius));
     bubble.setFillColor(sf::Color::Transparent);

@@ -1,4 +1,4 @@
-﻿#include "Wire.h"
+﻿#include "../Include/Wire.h"
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 

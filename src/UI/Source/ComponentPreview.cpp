@@ -2,49 +2,12 @@
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include <cmath>
+#include <unordered_map>
+#include <unordered_set>
 
-#include "../../Core/Components/Include/Button.h"
-#include "../../Core/Components/Include/AndGate.h"
-#include "../../Core/Components/Include/OrGate.h"
-#include "../../Core/Components/Include/NotGate.h"
-#include "../../Core/Components/Include/NandGate.h"
-#include "../../Core/Components/Include/NorGate.h"
-#include "../../Core/Components/Include/XorGate.h"
-#include "../../Core/Components/Include/XnorGate.h"
-#include "../../Core/Components/Include/InputComponent.h"
-#include "../../Core/Components/Include/OutputComponent.h"
-#include "../../Core/Components/Include/CustomComponent.h"
-#include "../../Core/Components/Include/ClockComponent.h"
-#include "../../Core/Components/Include/LEDComponent.h"
-#include "../../Core/Components/Include/SRFlipFlop.h"
-#include "../../Core/Components/Include/DFlipFlop.h"
-#include "../../Core/Components/Include/JKFlipFlop.h"
-#include "../../Core/Components/Include/TFlipFlop.h"
+#include "../../Core/Components/Include/ComponentFactory.h"
+#include "../../Core/Components/CustomComponent/CustomComponent.h"
 #include "../../Core/Components/CustomComponent/CustomComponentManager.h"
-
-std::string ComponentPreview::componentTypeToString(const ComponentType type) {
-    switch (type) {
-        case ComponentType::AND: return "AND";
-        case ComponentType::OR: return "OR";
-        case ComponentType::NOT: return "NOT";
-        case ComponentType::NAND: return "NAND";
-        case ComponentType::NOR: return "NOR";
-        case ComponentType::XOR: return "XOR";
-        case ComponentType::XNOR: return "XNOR";
-        case ComponentType::BUTTON: return "Button";
-        case ComponentType::LED: return "LED";
-        case ComponentType::CLOCK: return "Clock";
-        case ComponentType::INPUT: return "Input Pin";
-        case ComponentType::OUTPUT: return "Output Pin";
-        case ComponentType::SR_FF: return "SR FF";
-        case ComponentType::D_FF: return "D FF";
-        case ComponentType::JK_FF: return "JK FF";
-        case ComponentType::T_FF: return "T FF";
-        case ComponentType::CUSTOM: return "Custom";
-        case ComponentType::UNDEFINED: return "";
-    }
-    return "";
-}
 
 
 ComponentPreview::ComponentPreview() {
@@ -54,9 +17,9 @@ ComponentPreview::ComponentPreview() {
     }
 }
 
-void ComponentPreview::setComponentType(ComponentType type, int numInputs) {
-    if (type != currentComponentType || numInputs != currentNumInputs) {
-        currentComponentType = type;
+void ComponentPreview::setComponentType(const std::string& typeName, int numInputs) {
+    if (typeName != currentTypeName || numInputs != currentNumInputs) {
+        currentTypeName = typeName;
         currentNumInputs = numInputs;
         updatePreviewComponent();
         generateTruthTable();
@@ -66,67 +29,10 @@ void ComponentPreview::setComponentType(ComponentType type, int numInputs) {
 void ComponentPreview::updatePreviewComponent() {
     previewComponent.reset();
     
-    if (currentComponentType == ComponentType::UNDEFINED) return;
+    if (currentTypeName.empty()) return;
 
     sf::Vector2f origin(0.0f, 0.0f);
-    
-    switch (currentComponentType) {
-        case ComponentType::BUTTON:
-            previewComponent = std::make_unique<Button>(0, origin);
-            break;
-        case ComponentType::AND:
-            previewComponent = std::make_unique<AndGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::OR:
-            previewComponent = std::make_unique<OrGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::NOT:
-            previewComponent = std::make_unique<NotGate>(0, origin);
-            break;
-        case ComponentType::NAND:
-            previewComponent = std::make_unique<NandGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::NOR:
-            previewComponent = std::make_unique<NorGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::XOR:
-            previewComponent = std::make_unique<XorGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::XNOR:
-            previewComponent = std::make_unique<XnorGate>(0, origin, currentNumInputs);
-            break;
-        case ComponentType::INPUT:
-            previewComponent = std::make_unique<InputComponent>(0, origin, 0);
-            break;
-        case ComponentType::OUTPUT:
-            previewComponent = std::make_unique<OutputComponent>(0, origin, 0);
-            break;
-        case ComponentType::CLOCK:
-            previewComponent = std::make_unique<ClockComponent>(0, origin);
-            break;
-        case ComponentType::LED:
-            previewComponent = std::make_unique<LEDComponent>(0, origin);
-            break;
-        case ComponentType::SR_FF:
-            previewComponent = std::make_unique<SRFlipFlop>(0, origin);
-            break;
-        case ComponentType::D_FF:
-            previewComponent = std::make_unique<DFlipFlop>(0, origin);
-            break;
-        case ComponentType::JK_FF:
-            previewComponent = std::make_unique<JKFlipFlop>(0, origin);
-            break;
-        case ComponentType::T_FF:
-            previewComponent = std::make_unique<TFlipFlop>(0, origin);
-            break;
-        case ComponentType::CUSTOM:
-            if (CustomComponentManager::getInstance().hasDefinition(customTypeName)) {
-                previewComponent = std::make_unique<CustomComponent>(0, origin, customTypeName);
-            }
-            break;
-        case ComponentType::UNDEFINED:
-            break;
-    }
+    previewComponent = ComponentFactory::create(currentTypeName, 0, origin, currentNumInputs);
     
     if (previewComponent) {
         sf::FloatRect bounds = previewComponent->getBounds();
@@ -161,14 +67,19 @@ void ComponentPreview::renderUI() {
     ImGui::SetNextWindowSize(ImVec2(350, 450), ImGuiCond_FirstUseEver);
     
     if (ImGui::Begin("Component Preview", &visible)) {
-        if (currentComponentType == ComponentType::UNDEFINED) {
+        if (currentTypeName.empty()) {
             ImGui::TextDisabled("Select a component to preview");
         } else {
-            std::string typeStr = componentTypeToString(currentComponentType);
-            ImGui::Text("Component: %s", typeStr.c_str());
-            if (currentComponentType != ComponentType::BUTTON && 
-                currentComponentType != ComponentType::NOT && 
-                previewComponent) {
+            ImGui::Text("Component: %s", currentTypeName.c_str());
+            
+            // Types that don't show input count
+            static const std::unordered_set<std::string> singleInputTypes = {
+                "Button", "NotGate", "ClockComponent", "LEDComponent",
+                "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop",
+                "Input Pin", "Output Pin"
+            };
+            
+            if (singleInputTypes.find(currentTypeName) == singleInputTypes.end() && previewComponent) {
                 ImGui::Text("Inputs: %zu", previewComponent->getInputs().size());
             }
             
@@ -197,58 +108,38 @@ void ComponentPreview::generateTruthTable() {
     headers.clear();
     rows.clear();
     
-    if (currentComponentType == ComponentType::UNDEFINED) return;
+    if (currentTypeName.empty()) return;
     
-    switch (currentComponentType) {
-        case ComponentType::BUTTON:
-            headers = {"State", "Output"};
-            rows = {{"OFF", "0"}, {"ON", "1"}};
-            return;
-        case ComponentType::INPUT:
-            headers = {"Set Value", "Output"};
-            rows = {{"0", "0"}, {"1", "1"}};
-            return;
-        case ComponentType::OUTPUT:
-            headers = {"Input", "Captured"};
-            rows = {{"0", "0"}, {"1", "1"}};
-            return;
-        case ComponentType::CLOCK:
+    // Type-specific truth tables using unordered_map
+    static const std::unordered_map<std::string, std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>> staticTables = {
+        {"Button", {{"State", "Output"}, {{"OFF", "0"}, {"ON", "1"}}}},
+        {"Input Pin", {{"Set Value", "Output"}, {{"0", "0"}, {"1", "1"}}}},
+        {"Output Pin", {{"Input", "Captured"}, {{"0", "0"}, {"1", "1"}}}},
+        {"ClockComponent", {{"Info"}, {{"Toggles on each"}, {"simulation tick"}}}},
+        {"LEDComponent", {{"Input", "Light"}, {{"0", "OFF"}, {"1", "ON"}}}},
+        {"SRFlipFlop", {{"S", "R", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Invalid"}}}},
+        {"DFlipFlop", {{"D", "Q(next)"}, {{"0", "0"}, {"1", "1"}}}},
+        {"JKFlipFlop", {{"J", "K", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Toggle"}}}},
+        {"TFlipFlop", {{"T", "Q(next)"}, {{"0", "Q (hold)"}, {"1", "Toggle"}}}}
+    };
+    
+    auto staticIt = staticTables.find(currentTypeName);
+    if (staticIt != staticTables.end()) {
+        headers = staticIt->second.first;
+        rows = staticIt->second.second;
+        return;
+    }
+    
+    // Check if it's a custom component with too many inputs
+    if (CustomComponentManager::getInstance().hasDefinition(currentTypeName)) {
+        const auto* def = CustomComponentManager::getInstance().getDefinition(currentTypeName);
+        if (def && def->numInputs > 8) {
             headers = {"Info"};
-            rows = {{"Toggles on each"}, {"simulation tick"}};
+            rows.push_back({"Inputs: " + std::to_string(def->numInputs)});
+            rows.push_back({"Outputs: " + std::to_string(def->numOutputs)});
+            rows.push_back({"(Table too large)"});
             return;
-        case ComponentType::LED:
-            headers = {"Input", "Light"};
-            rows = {{"0", "OFF"}, {"1", "ON"}};
-            return;
-        case ComponentType::SR_FF:
-            headers = {"S", "R", "Q(next)"};
-            rows = {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Invalid"}};
-            return;
-        case ComponentType::D_FF:
-            headers = {"D", "Q(next)"};
-            rows = {{"0", "0"}, {"1", "1"}};
-            return;
-        case ComponentType::JK_FF:
-            headers = {"J", "K", "Q(next)"};
-            rows = {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Toggle"}};
-            return;
-        case ComponentType::T_FF:
-            headers = {"T", "Q(next)"};
-            rows = {{"0", "Q (hold)"}, {"1", "Toggle"}};
-            return;
-        case ComponentType::CUSTOM: {
-            const auto* def = CustomComponentManager::getInstance().getDefinition(customTypeName);
-            if (def && def->numInputs > 8) {
-                headers = {"Info"};
-                rows.push_back({"Inputs: " + std::to_string(def->numInputs)});
-                rows.push_back({"Outputs: " + std::to_string(def->numOutputs)});
-                rows.push_back({"(Table too large)"});
-                return;
-            }
-            break;
         }
-        default:
-            break;
     }
     
     if (!previewComponent) return;

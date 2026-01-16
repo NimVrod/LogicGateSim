@@ -10,7 +10,7 @@
 #include "../Core/Components/Include/XnorGate.h"
 #include "../Core/Components/Include/InputComponent.h"
 #include "../Core/Components/Include/OutputComponent.h"
-#include "../Core/Components/Include/CustomComponent.h"
+#include "../Core/Components/CustomComponent/CustomComponent.h"
 #include "../Core/Components/Include/ClockComponent.h"
 #include "../Core/Components/Include/LEDComponent.h"
 #include "../Core/Components/Include/SRFlipFlop.h"
@@ -24,53 +24,11 @@
 #include <fstream>
 #include <functional>
 
+#include "Core/Components/Include/ComponentFactory.h"
+#include "Core/Components/CustomComponent/CustomComponentManager.h"
+
 const std::string CircuitSerializer::currentVersion = "0.2";
 
-namespace {
-    struct ComponentParams {
-        int id;
-        sf::Vector2f position;
-        int numInputs;
-        tinyxml2::XMLElement* element;
-    };
-
-    using ComponentFactory = std::function<std::unique_ptr<Component>(const ComponentParams&)>;
-
-    // No switch case for strings in C++, so we use a map of lambda factories
-    const std::unordered_map<std::string, ComponentFactory>& getComponentFactories() {
-        static const std::unordered_map<std::string, ComponentFactory> factories = {
-            {"Button", [](const ComponentParams& p) { return std::make_unique<Button>(p.id, p.position); }},
-            {"AndGate", [](const ComponentParams& p) { return std::make_unique<AndGate>(p.id, p.position, p.numInputs); }},
-            {"OrGate", [](const ComponentParams& p) { return std::make_unique<OrGate>(p.id, p.position, p.numInputs); }},
-            {"NotGate", [](const ComponentParams& p) { return std::make_unique<NotGate>(p.id, p.position); }},
-            {"NandGate", [](const ComponentParams& p) { return std::make_unique<NandGate>(p.id, p.position, p.numInputs); }},
-            {"NorGate", [](const ComponentParams& p) { return std::make_unique<NorGate>(p.id, p.position, p.numInputs); }},
-            {"XorGate", [](const ComponentParams& p) { return std::make_unique<XorGate>(p.id, p.position, p.numInputs); }},
-            {"XnorGate", [](const ComponentParams& p) { return std::make_unique<XnorGate>(p.id, p.position, p.numInputs); }},
-            {"InputComponent", [](const ComponentParams& p) {
-                int index = p.element->IntAttribute("index", 0);
-                return std::make_unique<InputComponent>(p.id, p.position, index);
-            }},
-            {"OutputComponent", [](const ComponentParams& p) {
-                int index = p.element->IntAttribute("index", 0);
-                return std::make_unique<OutputComponent>(p.id, p.position, index);
-            }},
-            {"CustomComponent", [](const ComponentParams& p) -> std::unique_ptr<Component> {
-                const char* defName = p.element->Attribute("definitionName");
-                if (defName)
-                    return std::make_unique<CustomComponent>(p.id, p.position, defName);
-                return nullptr;
-            }},
-            {"ClockComponent", [](const ComponentParams& p) { return std::make_unique<ClockComponent>(p.id, p.position); }},
-            {"LEDComponent", [](const ComponentParams& p) { return std::make_unique<LEDComponent>(p.id, p.position); }},
-            {"SRFlipFlop", [](const ComponentParams& p) { return std::make_unique<SRFlipFlop>(p.id, p.position); }},
-            {"DFlipFlop", [](const ComponentParams& p) { return std::make_unique<DFlipFlop>(p.id, p.position); }},
-            {"JKFlipFlop", [](const ComponentParams& p) { return std::make_unique<JKFlipFlop>(p.id, p.position); }},
-            {"TFlipFlop", [](const ComponentParams& p) { return std::make_unique<TFlipFlop>(p.id, p.position); }},
-        };
-        return factories;
-    }
-}
 
 std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
     tinyxml2::XMLDocument doc;
@@ -94,13 +52,13 @@ std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
         compElem->SetAttribute("numInputs", static_cast<int>(comp->getInputs().size()));
         compElem->SetAttribute("numOutputs", static_cast<int>(comp->getOutputs().size()));
         
-        if (comp->GetType() == ComponentType::INPUT) {
+        if (comp->getType() == "Input Pin") {
             if (auto* inputComp = dynamic_cast<InputComponent*>(comp.get()))
                 compElem->SetAttribute("index", inputComp->getIndex());
-        } else if (comp->GetType() == ComponentType::OUTPUT) {
+        } else if (comp->getType() == "Output Pin") {
             if (auto* outputComp = dynamic_cast<OutputComponent*>(comp.get()))
                 compElem->SetAttribute("index", outputComp->getIndex());
-        } else if (comp->GetType() == ComponentType::CUSTOM) {
+        } else if (CustomComponentManager::getInstance().hasDefinition(comp->getType())) {
             if (auto* customComp = dynamic_cast<CustomComponent*>(comp.get()))
                 compElem->SetAttribute("definitionName", customComp->getDefinitionName().c_str());
         }
@@ -175,7 +133,6 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
 
     std::unordered_map<int, Component*> idToComponent;
     int maxId = 0;
-    const auto& factories = getComponentFactories();
 
     auto* componentsElem = root->FirstChildElement("Components");
     if (componentsElem) {
@@ -186,21 +143,20 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
             const char* type = compElem->Attribute("type");
             if (!type) continue;
 
-            ComponentParams params{
-                compElem->IntAttribute("id"),
-                sf::Vector2f(compElem->FloatAttribute("x"), compElem->FloatAttribute("y")),
-                compElem->IntAttribute("numInputs", 2),
-                compElem
-            };
-
-            auto it = factories.find(type);
-            if (it != factories.end()) {
-                auto comp = it->second(params);
-                if (comp) {
-                    idToComponent[params.id] = comp.get();
-                    maxId = std::max(maxId, params.id);
-                    circuit.components.push_back(std::move(comp));
-                }
+            int id = compElem->IntAttribute("id");
+            // For Input Pin and Output Pin, use the index attribute; otherwise use numInputs
+            int thirdParam = compElem->IntAttribute("numInputs", 2);
+            if (strcmp(type, "Input Pin") == 0 || strcmp(type, "Output Pin") == 0) {
+                thirdParam = compElem->IntAttribute("index", 0);
+            }
+            auto comp = ComponentFactory::create(type,
+                                                 id,
+                                                 sf::Vector2f(compElem->FloatAttribute("x"), compElem->FloatAttribute("y")),
+                                                 thirdParam);
+            if (comp) {
+                idToComponent[id] = comp.get();
+                maxId = std::max(maxId, id);
+                circuit.components.push_back(std::move(comp));
             }
         }
     }

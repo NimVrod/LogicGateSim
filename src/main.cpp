@@ -4,7 +4,7 @@
 #include "imgui-SFML.h"
 #include <SFML/Graphics.hpp>
 #include <nfd.h>
-#include "Core/ResourceManager.h"
+#include "Core/Components/Include/ResourceManager.h"
 #include "Simulation/Circuit.h"
 #include "UI/Include/UIManager.h"
 
@@ -18,7 +18,7 @@ int main()
     sf::ContextSettings contextSettings;
     contextSettings.antiAliasingLevel = 8;
 
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Gate Simulator", sf::Style::Default, sf::State::Windowed, contextSettings);
+    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Simulator", sf::Style::Default, sf::State::Windowed, contextSettings);
     window.setFramerateLimit(60);
     if (!ImGui::SFML::Init(window))
     {
@@ -115,6 +115,7 @@ int main()
         window.setView(circuitView);
         circuit.draw(window);
 
+        // Reset to default view for UI rendering
         window.setView(window.getDefaultView());
         UIManager::getInstance().Render();
         

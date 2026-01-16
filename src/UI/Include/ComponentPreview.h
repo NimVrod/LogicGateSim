@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "../../Core/Component.h"
+#include "../../Core/Components/Include/Component.h"
 #include "ToggableImGuiWindow.h"
 
 class ComponentPreview : public ToggableImGuiWindow {
@@ -11,16 +11,15 @@ public:
     ComponentPreview();
     ~ComponentPreview() override = default;
     
-    void setComponentType(ComponentType type, int numInputs = 2);
+    void setComponentType(const std::string& typeName, int numInputs = 2);
     
     void renderUI() override;
     
-    ComponentType getCurrentComponentType() const { return currentComponentType; }
+    const std::string& getCurrentTypeName() const { return currentTypeName; }
     int getCurrentNumInputs() const { return currentNumInputs; }
     
 private:
-    ComponentType currentComponentType = ComponentType::UNDEFINED;
-    std::string customTypeName;
+    std::string currentTypeName;
     int currentNumInputs = 2;
     
     sf::RenderTexture renderTexture;
@@ -36,6 +35,4 @@ private:
     void renderTruthTableUI();
     void updatePreviewComponent();
     void renderComponentToTexture();
-
-    static std::string componentTypeToString(ComponentType type);
 };

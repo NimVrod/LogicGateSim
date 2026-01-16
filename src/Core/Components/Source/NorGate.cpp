@@ -32,7 +32,6 @@ std::string NorGate::getType() const {
 
 void NorGate::draw(sf::RenderTarget& target) {
     sf::ConvexShape shape;
-    // Shrink shape slightly to fit bubble
     float w = 55.f; 
     float h = body.getSize().y;
     sf::Vector2f pos = getPosition();
@@ -41,7 +40,6 @@ void NorGate::draw(sf::RenderTarget& target) {
     std::vector<sf::Vector2f> points;
     int segments = 20;
     
-    // Top Edge
     for (int i = 0; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*(w*0.6f) + t*t*w;
@@ -49,7 +47,6 @@ void NorGate::draw(sf::RenderTarget& target) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Bottom Edge
     for (int i = 1; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*w + 2*(1-t)*t*(w*0.6f) + t*t*0;
@@ -57,7 +54,6 @@ void NorGate::draw(sf::RenderTarget& target) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Back Curve
     for (int i = 1; i < segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*15.f + t*t*0;
@@ -75,7 +71,6 @@ void NorGate::draw(sf::RenderTarget& target) {
     shape.setOutlineColor(sf::Color::White);
     shape.setOutlineThickness(2.f);
     
-    // Bubble
     sf::CircleShape bubble(bubbleRadius);
     bubble.setPosition(sf::Vector2f(pos.x + w, pos.y + h/2.f - bubbleRadius));
     bubble.setFillColor(sf::Color::Transparent);

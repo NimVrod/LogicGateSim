@@ -36,15 +36,8 @@ void OrGate::draw(sf::RenderTarget& target) {
     sf::Vector2f pos = getPosition();
 
     std::vector<sf::Vector2f> points;
-    
-    // Top Curve: (0,0) to (w, h/2)
-    // Control point roughly (w/2, 0)
-    // Quadratic Bezier: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
-    // P0=(0,0), P1=(30, 0), P2=(60, h/2)
-    
     int segments = 20;
     
-    // Top Edge
     for (int i = 0; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*(w*0.6f) + t*t*w;
@@ -52,8 +45,6 @@ void OrGate::draw(sf::RenderTarget& target) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Bottom Edge: (w, h/2) to (0, h)
-    // P0=(60, h/2), P1=(30, h), P2=(0, h)
     for (int i = 1; i <= segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*w + 2*(1-t)*t*(w*0.6f) + t*t*0;
@@ -61,9 +52,7 @@ void OrGate::draw(sf::RenderTarget& target) {
         points.push_back(sf::Vector2f(x, y));
     }
     
-    // Back Curve: (0, h) to (0, 0) (Concave)
-    // P0=(0, h), P1=(15, h/2), P2=(0, 0)
-    for (int i = 1; i < segments; ++i) { // Skip last point (0,0) as it loops to first
+    for (int i = 1; i < segments; ++i) {
         float t = (float)i / segments;
         float x = (1-t)*(1-t)*0 + 2*(1-t)*t*15.f + t*t*0;
         float y = (1-t)*(1-t)*h + 2*(1-t)*t*(h/2.f) + t*t*0;

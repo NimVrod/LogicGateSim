@@ -3,7 +3,7 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
-#include "../../Component.h"
+#include "Component.h"
 
 // LEDComponent is a visual output that lights up when its input is high.
 class LEDComponent : public Component {
@@ -13,7 +13,6 @@ public:
     void calculate() override;
     std::string GetLabel() override;
     std::string getType() const override;
-    ComponentType GetType() override { return ComponentType::LED; }
     void draw(sf::RenderTarget& target) override;
     void drawLabel(sf::RenderTarget& target) override;
     sf::FloatRect getBounds() const override;

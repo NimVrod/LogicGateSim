@@ -4,7 +4,7 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
-#include "../../Component.h"
+#include "Component.h"
 
 // InputComponent represents an input pin interface for custom components.
 // When used in a sub-circuit, it receives values from external inputs.
@@ -15,7 +15,6 @@ public:
     void calculate() override;
     std::string GetLabel() override;
     std::string getType() const override;
-    ComponentType GetType() override { return ComponentType::INPUT; }
     void draw(sf::RenderTarget& target) override;
     void drawLabel(sf::RenderTarget& target) override;
     sf::FloatRect getBounds() const override;
@@ -30,6 +29,6 @@ protected:
     sf::RectangleShape body;
     
 private:
-    int index;          // Index for ordering (Input 0, Input 1, etc.)
-    int externalValue;  // Value set from external source
+    int index;
+    int externalValue;
 };

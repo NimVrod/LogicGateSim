@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "../../Component.h"
+#include "../Include/Component.h"
 
 // Forward declaration
 class Circuit;
@@ -22,12 +22,11 @@ public:
     // Create from a definition
     CustomComponent(int id, sf::Vector2f position, const std::string& definitionName);
     
-    ~CustomComponent();
+    ~CustomComponent() override;
     
     void calculate() override;
     std::string GetLabel() override;
     std::string getType() const override;
-    ComponentType GetType() override { return ComponentType::CUSTOM; }
     void draw(sf::RenderTarget& target) override;
     void drawLabel(sf::RenderTarget& target) override;
     sf::FloatRect getBounds() const override;
