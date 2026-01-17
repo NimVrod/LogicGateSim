@@ -12,7 +12,10 @@ int main() {
     const float MAX_ZOOM_IN = 0.1f;
     const float MAX_ZOOM_OUT = 10.0f;
 
-    NFD_Init();
+    if (NFD_Init() == NFD_ERROR) {
+        std::cerr << "Failed to initialize NFD\n";
+        return -1;
+    }
 
     sf::ContextSettings contextSettings;
     contextSettings.antiAliasingLevel = 8;
