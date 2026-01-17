@@ -104,12 +104,11 @@ bool CustomComponentManager::loadFromFile(const std::string& filepath) {
         CustomComponentDefinition def;
         
         const char* name = compElem->Attribute("name");
-        if (name) {
+        if (name)
             def.name = name;
-        } else {
+        else
             continue; // Skip entries without a name
-        }
-        
+
         def.numInputs = compElem->IntAttribute("numInputs", 0);
         def.numOutputs = compElem->IntAttribute("numOutputs", 0);
         

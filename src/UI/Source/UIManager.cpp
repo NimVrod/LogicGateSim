@@ -265,7 +265,7 @@ void UIManager::DrawMenuBar() {
         
         static char nameBuffer[64] = "";
         if (showSaveAsCustomPopup) {
-            strncpy_s(nameBuffer, customComponentName.c_str(), sizeof(nameBuffer) - 1);
+            strcpy(nameBuffer, customComponentName.c_str());
             showSaveAsCustomPopup = false;
         }
         

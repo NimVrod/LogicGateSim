@@ -14,8 +14,6 @@ class Circuit {
     friend class CircuitSerializer;
 public:
     void addComponent(std::unique_ptr<Component> component);
-    template <typename T, typename... Args>
-    T* addComponent(Args&&... args);
     void addWire(Pin* start, Pin* end);
     void clear();
     const std::vector<std::unique_ptr<Component>>& GetComponents() const;
@@ -41,12 +39,10 @@ public:
     bool getSnapToGrid() const { return snapToGrid; }
     void setGridSize(float size) { gridSize = size; }
     float getGridSize() const { return gridSize; }
-    
-    // Context menu
+
     int getContextMenuComponentId() const { return contextMenuComponentId; }
     void clearContextMenu() { contextMenuComponentId = -1; }
-    
-    // Get component by ID
+
     Component* getComponentById(int id) const;
 
 private:

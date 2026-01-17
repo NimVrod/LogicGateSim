@@ -331,11 +331,3 @@ Component* Circuit::getComponentById(int id) const {
     }
     return nullptr;
 }
-
-template <typename T, typename... Args>
-T* Circuit::addComponent(Args&&... args) {
-    auto component = std::make_unique<T>(getNextId(), std::forward<Args>(args)...);
-    T* ptr = component.get();
-    addComponent(std::move(component));
-    return ptr;
-}

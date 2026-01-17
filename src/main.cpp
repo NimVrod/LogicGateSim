@@ -89,13 +89,13 @@ int main()
                         }
                         circuitView.zoom(zoomFactor);
                         window.setView(circuitView);
-                        
+
                         sf::Vector2f worldPosAfter = window.mapPixelToCoords(mousePos);
                         circuitView.move(worldPosBefore - worldPosAfter);
                         window.setView(circuitView);
                     }
 
-                     if (mouseScrolled->wheel == sf::Mouse::Wheel::Horizontal) {
+                    else if (mouseScrolled->wheel == sf::Mouse::Wheel::Horizontal) {
                         sf::Vector2f panAmount = (mouseScrolled->delta > 0) ? sf::Vector2f(-20.f, 0.f) : sf::Vector2f(20.f, 0.f);
                         circuitView.move(panAmount);
                         window.setView(circuitView);
