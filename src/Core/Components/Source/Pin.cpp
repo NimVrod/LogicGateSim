@@ -44,3 +44,10 @@ void Pin::draw(sf::RenderTarget &target) const {
 
     target.draw(shape);
 }
+
+bool Pin::mouseOver(sf::Vector2f mousePos) const {
+    sf::Vector2f pinPos = getPosition();
+    float distSq = (mousePos.x - pinPos.x) * (mousePos.x - pinPos.x) +
+                   (mousePos.y - pinPos.y) * (mousePos.y - pinPos.y);
+    return distSq < RADIUS * RADIUS;
+}

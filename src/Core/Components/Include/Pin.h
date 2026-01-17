@@ -30,6 +30,8 @@ public:
 
     void draw(sf::RenderTarget &target) const;
 
+    bool mouseOver(sf::Vector2f mousePos) const;
+
 private:
     Component *parent;
     PinType type;

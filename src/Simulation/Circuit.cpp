@@ -133,17 +133,12 @@ void Circuit::setDrawLabels(bool draw) {
 }
 
 Pin *Circuit::getPinAt(sf::Vector2f pos) {
-    auto radius = Pin::RADIUS + 2.0f;
     for (auto &comp: components) {
         for (auto &pin: comp->getInputs()) {
-            sf::Vector2f pinPos = pin->getPosition();
-            float distSq = (pos.x - pinPos.x) * (pos.x - pinPos.x) + (pos.y - pinPos.y) * (pos.y - pinPos.y);
-            if (distSq < radius * radius) return pin.get();
+            if (pin->mouseOver(pos)) return pin.get();
         }
         for (auto &pin: comp->getOutputs()) {
-            sf::Vector2f pinPos = pin->getPosition();
-            float distSq = (pos.x - pinPos.x) * (pos.x - pinPos.x) + (pos.y - pinPos.y) * (pos.y - pinPos.y);
-            if (distSq < radius * radius) return pin.get();
+            if (pin->mouseOver(pos)) return pin.get();
         }
     }
     return nullptr;
@@ -161,11 +156,13 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                 hoveredComponent = comp;
                 break;
             }
-        }
-        if (!hoveredComponent) {
-            auto pin = getPinAt(worldPos);
-            if (pin) {
-                hoveredComponent = pin->getParent();
+            else {
+                for (auto &pin: comp->getInputs()) {
+                    if (pin->mouseOver(worldPos)) hoveredComponent = comp;
+                }
+                for (auto &pin: comp->getOutputs()) {
+                    if (pin->mouseOver(worldPos)) hoveredComponent = comp;
+                }
             }
         }
 
