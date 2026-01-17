@@ -13,23 +13,28 @@ public:
     static constexpr size_t MAX_PINS = 5;
 
     PinPlotter() = default;
+
     ~PinPlotter() override = default;
 
-    bool addPin(Pin* pin, const std::string& label);
-    void removePin(Pin* pin);
+    bool addPin(Pin *pin, const std::string &label);
+
+    void removePin(Pin *pin);
+
     void clear();
+
     void recordValues();
+
     void renderUI() override;
-    
+
     size_t getPinCount() const { return monitoredPins.size(); }
 
 private:
     struct MonitoredPin {
-        Pin* pin;
+        Pin *pin;
         std::string label;
         std::deque<float> history;
     };
-    
+
     std::vector<MonitoredPin> monitoredPins;
     int historySize = static_cast<int>(DEFAULT_HISTORY);
 };

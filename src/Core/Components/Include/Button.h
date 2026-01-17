@@ -6,18 +6,27 @@
 #include "Component.h"
 
 class Button : public Component {
-	public:
-	Button(int id, sf::Vector2f position, int output = 1);
-	void calculate() override;
-	std::string GetLabel() override;
-	std::string getType() const override;
-	void draw(sf::RenderTarget& target) override;
-	void drawLabel(sf::RenderTarget& target) override;
-	sf::FloatRect getBounds() const override;
-	void toggle();
+public:
+    Button(int id, sf::Vector2f position, int output = 1);
+
+    void calculate() override;
+
+    std::string GetLabel() override;
+
+    std::string getType() const override;
+
+    void draw(sf::RenderTarget &target) override;
+
+    void drawLabel(sf::RenderTarget &target) override;
+
+    sf::FloatRect getBounds() const override;
+
+    void toggle();
+
 protected:
-	sf::RectangleShape body;
+    sf::RectangleShape body;
+
 private:
-	bool state;
-	float output;
+    bool state;
+    float output;
 };

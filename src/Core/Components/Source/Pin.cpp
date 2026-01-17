@@ -4,13 +4,12 @@
 
 const float Pin::RADIUS = 6.f;
 
-Pin::Pin(Component* parent, PinType type, sf::Vector2f relativePosition)
-    : parent(parent), type(type), relativePosition(relativePosition), value(0)
-{
+Pin::Pin(Component *parent, PinType type, sf::Vector2f relativePosition)
+    : parent(parent), type(type), relativePosition(relativePosition), value(0) {
 }
 
 void Pin::setValue(int value) {
-	this->value = value;
+    this->value = value;
 }
 
 int Pin::getValue() const {
@@ -29,13 +28,13 @@ void Pin::setRelativePosition(sf::Vector2f relativePosition) {
     this->relativePosition = relativePosition;
 }
 
-Component* Pin::getParent() const {
+Component *Pin::getParent() const {
     return parent;
 }
 
-void Pin::draw(sf::RenderTarget& target) const {
+void Pin::draw(sf::RenderTarget &target) const {
     const sf::Color fillColor = (value >= 1) ? sf::Color::Green : sf::Color(50, 50, 50);
-    
+
     sf::CircleShape shape(RADIUS);
     shape.setOrigin({RADIUS, RADIUS});
     shape.setPosition(getPosition());

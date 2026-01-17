@@ -3,12 +3,12 @@
 #include <SFML/Graphics/Font.hpp>
 
 
-ResourceManager& ResourceManager::getInstance() {
+ResourceManager &ResourceManager::getInstance() {
     static ResourceManager instance;
     return instance;
 }
 
-sf::Texture& ResourceManager::getTexture(const std::string& filename) {
+sf::Texture &ResourceManager::getTexture(const std::string &filename) {
     auto it = textures.find(filename);
     if (it != textures.end()) {
         return it->second;
@@ -23,7 +23,7 @@ sf::Texture& ResourceManager::getTexture(const std::string& filename) {
     }
 }
 
-sf::Font& ResourceManager::getFont(const std::string& filename) {
+sf::Font &ResourceManager::getFont(const std::string &filename) {
     auto it = fonts.find(filename);
     if (it != fonts.end()) {
         return it->second;

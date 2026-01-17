@@ -17,7 +17,7 @@ ComponentPreview::ComponentPreview() {
     }
 }
 
-void ComponentPreview::setComponentType(const std::string& typeName, int numInputs) {
+void ComponentPreview::setComponentType(const std::string &typeName, int numInputs) {
     if (typeName != currentTypeName || numInputs != currentNumInputs) {
         currentTypeName = typeName;
         currentNumInputs = numInputs;
@@ -28,23 +28,23 @@ void ComponentPreview::setComponentType(const std::string& typeName, int numInpu
 
 void ComponentPreview::updatePreviewComponent() {
     previewComponent.reset();
-    
+
     if (currentTypeName.empty()) return;
 
     sf::Vector2f origin(0.0f, 0.0f);
     previewComponent = ComponentFactory::create(currentTypeName, 0, origin, currentNumInputs);
-    
+
     if (previewComponent) {
         sf::FloatRect bounds = previewComponent->getBounds();
         float textureWidth = 200.0f;
         float textureHeight = 120.0f;
-        
+
         float centerX = (textureWidth - bounds.size.x) / 2.0f;
         float centerY = (textureHeight - bounds.size.y) / 2.0f;
-        
+
         previewComponent->setPosition(sf::Vector2f(centerX, centerY));
     }
-    
+
     renderComponentToTexture();
 }
 
@@ -57,32 +57,32 @@ void ComponentPreview::renderComponentToTexture() {
     if (drawPins) {
         previewComponent->drawPins(renderTexture);
     }
-    
+
     renderTexture.display();
 }
 
 void ComponentPreview::renderUI() {
     if (!visible) return;
-    
+
     ImGui::SetNextWindowSize(ImVec2(350, 450), ImGuiCond_FirstUseEver);
-    
+
     if (ImGui::Begin("Component Preview", &visible)) {
         if (currentTypeName.empty()) {
             ImGui::TextDisabled("Select a component to preview");
         } else {
             ImGui::Text("Component: %s", currentTypeName.c_str());
-            
+
             // Types that don't show input count
             static const std::unordered_set<std::string> singleInputTypes = {
                 "Button", "NotGate", "ClockComponent", "LEDComponent",
                 "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop",
                 "Input Pin", "Output Pin"
             };
-            
+
             if (singleInputTypes.find(currentTypeName) == singleInputTypes.end() && previewComponent) {
                 ImGui::Text("Inputs: %zu", previewComponent->getInputs().size());
             }
-            
+
             ImGui::Separator();
 
             ImGui::Text("Preview:");
@@ -94,7 +94,7 @@ void ComponentPreview::renderUI() {
             } else {
                 ImGui::TextDisabled("Preview not available");
             }
-            
+
             ImGui::Separator();
 
             ImGui::Text("Truth Table:");
@@ -107,32 +107,39 @@ void ComponentPreview::renderUI() {
 void ComponentPreview::generateTruthTable() {
     headers.clear();
     rows.clear();
-    
+
     if (currentTypeName.empty()) return;
-    
+
     // Type-specific truth tables using unordered_map
-    static const std::unordered_map<std::string, std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>> staticTables = {
+    static const std::unordered_map<std::string, std::pair<std::vector<std::string>, std::vector<std::vector<
+        std::string> > > > staticTables = {
         {"Button", {{"State", "Output"}, {{"OFF", "0"}, {"ON", "1"}}}},
         {"Input Pin", {{"Set Value", "Output"}, {{"0", "0"}, {"1", "1"}}}},
         {"Output Pin", {{"Input", "Captured"}, {{"0", "0"}, {"1", "1"}}}},
         {"ClockComponent", {{"Info"}, {{"Toggles on each"}, {"simulation tick"}}}},
         {"LEDComponent", {{"Input", "Light"}, {{"0", "OFF"}, {"1", "ON"}}}},
-        {"SRFlipFlop", {{"S", "R", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Invalid"}}}},
+        {
+            "SRFlipFlop",
+            {{"S", "R", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Invalid"}}}
+        },
         {"DFlipFlop", {{"D", "Q(next)"}, {{"0", "0"}, {"1", "1"}}}},
-        {"JKFlipFlop", {{"J", "K", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Toggle"}}}},
+        {
+            "JKFlipFlop",
+            {{"J", "K", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Toggle"}}}
+        },
         {"TFlipFlop", {{"T", "Q(next)"}, {{"0", "Q (hold)"}, {"1", "Toggle"}}}}
     };
-    
+
     auto staticIt = staticTables.find(currentTypeName);
     if (staticIt != staticTables.end()) {
         headers = staticIt->second.first;
         rows = staticIt->second.second;
         return;
     }
-    
+
     // Check if it's a custom component with too many inputs
     if (CustomComponentManager::getInstance().hasDefinition(currentTypeName)) {
-        const auto* def = CustomComponentManager::getInstance().getDefinition(currentTypeName);
+        const auto *def = CustomComponentManager::getInstance().getDefinition(currentTypeName);
         if (def && def->numInputs > 8) {
             headers = {"Info"};
             rows.push_back({"Inputs: " + std::to_string(def->numInputs)});
@@ -141,12 +148,12 @@ void ComponentPreview::generateTruthTable() {
             return;
         }
     }
-    
+
     if (!previewComponent) return;
-    
+
     int numInputs = static_cast<int>(previewComponent->getInputs().size());
     int numOutputs = static_cast<int>(previewComponent->getOutputs().size());
-    
+
     for (int i = 0; i < numInputs; i++) {
         headers.push_back(std::string(1, 'A' + i));
     }
@@ -157,33 +164,33 @@ void ComponentPreview::generateTruthTable() {
             headers.push_back("O" + std::to_string(i));
         }
     }
-    
+
     int numRows = 1 << numInputs;
     for (int r = 0; r < numRows; r++) {
         std::vector<std::string> row;
-        
-        const auto& inputs = previewComponent->getInputs();
+
+        const auto &inputs = previewComponent->getInputs();
         for (int i = 0; i < numInputs; i++) {
             bool val = (r >> (numInputs - 1 - i)) & 1;
             row.push_back(val ? "1" : "0");
             inputs[i]->setValue(val ? 1 : 0);
         }
-        
+
         previewComponent->calculate();
-        
-        const auto& outputs = previewComponent->getOutputs();
+
+        const auto &outputs = previewComponent->getOutputs();
         for (int i = 0; i < numOutputs; i++) {
             int outputVal = outputs[i]->getValue();
             row.push_back(outputVal >= 1 ? "1" : "0");
         }
-        
+
         rows.push_back(row);
     }
 
-    for (const auto& input : previewComponent->getInputs()) {
+    for (const auto &input: previewComponent->getInputs()) {
         input->setValue(0);
     }
-    for (const auto& output : previewComponent->getOutputs()) {
+    for (const auto &output: previewComponent->getOutputs()) {
         output->setValue(0);
     }
     previewComponent->calculate();
@@ -191,23 +198,23 @@ void ComponentPreview::generateTruthTable() {
 
 void ComponentPreview::renderTruthTableUI() {
     if (headers.empty()) return;
-    
+
     ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit;
-    
+
     if (ImGui::BeginTable("TruthTable", static_cast<int>(headers.size()), flags)) {
-        for (const auto& h : headers) {
+        for (const auto &h: headers) {
             ImGui::TableSetupColumn(h.c_str(), ImGuiTableColumnFlags_WidthFixed, 30.0f);
         }
         ImGui::TableHeadersRow();
-        
-        for (const auto& row : rows) {
+
+        for (const auto &row: rows) {
             ImGui::TableNextRow();
             int numInputsInRow = 0;
-            for (const auto& h : headers) {
+            for (const auto &h: headers) {
                 if (h.length() == 1 && h[0] >= 'A' && h[0] <= 'Z') numInputsInRow++;
                 else break;
             }
-            
+
             for (size_t i = 0; i < row.size(); i++) {
                 ImGui::TableSetColumnIndex(static_cast<int>(i));
                 if (static_cast<int>(i) >= numInputsInRow && row[i] == "1") {

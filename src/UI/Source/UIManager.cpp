@@ -7,17 +7,17 @@
 #include "../../Core/Components/CustomComponent/CustomComponentManager.h"
 #include "../../Core/Components/CustomComponent/CustomComponentDefinition.h"
 
-const char* UIManager::gateTypes[] = { "AND", "OR", "NOT", "NAND", "NOR", "XOR", "XNOR" };
-const char* UIManager::inputTypes[] = { "Button", "Input Pin", "Clock" };
-const char* UIManager::outputTypes[] = { "Output Pin", "LED" };
-const char* UIManager::otherTypes[] = { "SR FF", "D FF", "JK FF", "T FF" };
+const char *UIManager::gateTypes[] = {"AND", "OR", "NOT", "NAND", "NOR", "XOR", "XNOR"};
+const char *UIManager::inputTypes[] = {"Button", "Input Pin", "Clock"};
+const char *UIManager::outputTypes[] = {"Output Pin", "LED"};
+const char *UIManager::otherTypes[] = {"SR FF", "D FF", "JK FF", "T FF"};
 
-UIManager& UIManager::getInstance() {
+UIManager &UIManager::getInstance() {
     static UIManager instance;
     return instance;
 }
 
-void UIManager::Init(sf::RenderWindow& win, Circuit& circ) {
+void UIManager::Init(sf::RenderWindow &win, Circuit &circ) {
     window = &win;
     circuit = &circ;
     LoadTheme();
@@ -25,15 +25,15 @@ void UIManager::Init(sf::RenderWindow& win, Circuit& circ) {
 }
 
 void UIManager::LoadTheme() {
-    ImGuiStyle& style = ImGui::GetStyle();
-    
+    ImGuiStyle &style = ImGui::GetStyle();
+
     style.WindowRounding = 8.0f;
     style.FrameRounding = 5.0f;
     style.PopupRounding = 5.0f;
     style.ScrollbarRounding = 12.0f;
     style.GrabRounding = 5.0f;
     style.TabRounding = 5.0f;
-    
+
     style.Colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.12f, 0.12f, 0.12f, 0.95f);
@@ -90,14 +90,17 @@ void UIManager::Update(sf::Time dt) {
         if (simulationInterval <= 0.0f) {
             static int frameCounter = 0;
             frameCounter++;
-            if (clocksEnabled && frameCounter >= 30) {
+            if (clocksEnabled &&frameCounter 
+            >=
+            30
+            )
+            {
                 circuit->tickClocks();
                 frameCounter = 0;
             }
             circuit->update();
             pinPlotter.recordValues();
-        }
-        else if (timeAccumulator >= simulationInterval) {
+        } else if (timeAccumulator >= simulationInterval) {
             if (clocksEnabled)
                 circuit->tickClocks();
             circuit->update();
@@ -105,7 +108,7 @@ void UIManager::Update(sf::Time dt) {
             timeAccumulator = 0.0f;
         }
     }
-    
+
     if (!statusMessage.empty()) {
         statusMessageTimer += dt.asSeconds();
         if (statusMessageTimer >= STATUS_MESSAGE_DURATION) {
@@ -117,7 +120,7 @@ void UIManager::Update(sf::Time dt) {
 
 void UIManager::Render() {
     DrawMenuBar();
-    
+
     if (showComponentPicker) DrawComponentPicker();
     if (showSimulationControl) DrawSimulationControl();
     if (showComponentList) DrawComponentList();
@@ -125,10 +128,10 @@ void UIManager::Render() {
         if (showComponentPreview) componentPreview.show();
         else componentPreview.hide();
     }
-    
+
     componentPreview.renderUI();
     showComponentPreview = componentPreview.isVisible();
-    
+
     if (showPinPlotter != pinPlotter.isVisible()) {
         if (showPinPlotter) pinPlotter.show();
         else pinPlotter.hide();
@@ -144,13 +147,13 @@ void UIManager::DrawMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Save", "Ctrl+S")) {
-                nfdu8char_t* outPath = nullptr;
-                nfdu8filteritem_t filters[1] = { { "Circuit Files", "xml" } };
+                nfdu8char_t *outPath = nullptr;
+                nfdu8filteritem_t filters[1] = {{"Circuit Files", "xml"}};
                 nfdsavedialogu8args_t args = {0};
                 args.filterList = filters;
                 args.filterCount = 1;
                 args.defaultName = "circuit.xml";
-                
+
                 nfdresult_t result = NFD_SaveDialogU8_With(&outPath, &args);
                 if (result == NFD_OKAY) {
                     currentFilePath = outPath;
@@ -162,14 +165,14 @@ void UIManager::DrawMenuBar() {
                     NFD_FreePathU8(outPath);
                 }
             }
-            
+
             if (ImGui::MenuItem("Open", "Ctrl+O")) {
-                nfdu8char_t* outPath = nullptr;
-                nfdu8filteritem_t filters[1] = { { "Circuit Files", "xml" } };
+                nfdu8char_t *outPath = nullptr;
+                nfdu8filteritem_t filters[1] = {{"Circuit Files", "xml"}};
                 nfdopendialogu8args_t args = {nullptr};
                 args.filterList = filters;
                 args.filterCount = 1;
-                
+
                 nfdresult_t result = NFD_OpenDialogU8_With(&outPath, &args);
                 if (result == NFD_OKAY) {
                     pendingOpenPath = outPath;
@@ -177,15 +180,15 @@ void UIManager::DrawMenuBar() {
                     showOpenConfirmPopup = true;
                 }
             }
-            
+
             if (ImGui::MenuItem("Save As Custom Component")) {
                 bool hasInputs = false;
                 bool hasOutputs = false;
-                for (const auto& comp : circuit->GetComponents()) {
+                for (const auto &comp: circuit->GetComponents()) {
                     if (comp->getType() == "Input Pin") hasInputs = true;
                     if (comp->getType() == "Output Pin") hasOutputs = true;
                 }
-                
+
                 if (!hasInputs && !hasOutputs) {
                     setStatusMessage("Add Input/Output components to define the interface.");
                 } else {
@@ -193,16 +196,16 @@ void UIManager::DrawMenuBar() {
                     showSaveAsCustomPopup = true;
                 }
             }
-            
+
             ImGui::Separator();
-            
+
             if (ImGui::MenuItem("Exit")) {
                 shouldClose = true;
             }
-            
+
             ImGui::EndMenu();
         }
-        
+
         if (ImGui::BeginMenu("View")) {
             ImGui::MenuItem("Component Picker", nullptr, &showComponentPicker);
             ImGui::MenuItem("Simulation Control", nullptr, &showSimulationControl);
@@ -232,12 +235,12 @@ void UIManager::DrawMenuBar() {
     if (showOpenConfirmPopup) {
         ImGui::OpenPopup("Confirm Open");
     }
-    
+
     if (ImGui::BeginPopupModal("Confirm Open", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Opening a new circuit will overwrite the current one.");
         ImGui::Text("Are you sure you want to continue?");
         ImGui::Separator();
-        
+
         if (ImGui::Button("Open", ImVec2(120, 0))) {
             if (CircuitSerializer::loadFromFile(*circuit, pendingOpenPath)) {
                 currentFilePath = pendingOpenPath;
@@ -255,31 +258,31 @@ void UIManager::DrawMenuBar() {
         }
         ImGui::EndPopup();
     }
-    
+
     if (showSaveAsCustomPopup) {
         ImGui::OpenPopup("Save As Custom Component");
     }
-    
+
     if (ImGui::BeginPopupModal("Save As Custom Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Enter a name for your custom component:");
-        
+
         static char nameBuffer[64] = "";
         if (showSaveAsCustomPopup) {
             strcpy(nameBuffer, customComponentName.c_str());
             showSaveAsCustomPopup = false;
         }
-        
+
         ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer));
-        
+
         int inputCount = 0, outputCount = 0;
-        for (const auto& comp : circuit->GetComponents()) {
+        for (const auto &comp: circuit->GetComponents()) {
             if (comp->getType() == "Input Pin") inputCount++;
             if (comp->getType() == "Output Pin") outputCount++;
         }
         ImGui::Text("Inputs: %d, Outputs: %d", inputCount, outputCount);
-        
+
         ImGui::Separator();
-        
+
         if (ImGui::Button("Save", ImVec2(120, 0))) {
             std::string name = nameBuffer;
             if (!name.empty()) {
@@ -288,7 +291,7 @@ void UIManager::DrawMenuBar() {
                 def.circuitXml = CircuitSerializer::saveToXmlString(*circuit);
                 def.numInputs = inputCount;
                 def.numOutputs = outputCount;
-                
+
                 if (CustomComponentManager::getInstance().addDefinition(def)) {
                     CustomComponentManager::getInstance().saveToFile(customComponentsFile);
                     setStatusMessage("Saved custom component: " + name);
@@ -308,126 +311,128 @@ void UIManager::DrawMenuBar() {
 
 void UIManager::DrawComponentPicker() {
     ImGui::Begin("Component Picker", &showComponentPicker);
-    
+
     if (ImGui::BeginTabBar("ComponentCategories")) {
         if (ImGui::BeginTabItem("Gates")) {
             selectedCategory = 0;
             ImGui::Combo("Gate Type", &selectedGate, gateTypes, IM_ARRAYSIZE(gateTypes));
-            
+
             if (selectedGate != 2) {
                 ImGui::SliderInt("Number of Inputs", &numberInputs, 2, 8);
             }
-            
+
             if (ImGui::Button("Add Gate", ImVec2(-1, 0))) {
                 AddGate(selectedGate, sf::Vector2f(100, 100));
             }
 
             int inputs = (selectedGate == 2) ? 1 : numberInputs;
-            static const char* gateTypeNames[] = { "AndGate", "OrGate", "NotGate", "NandGate", "NorGate", "XorGate", "XnorGate" };
+            static const char *gateTypeNames[] = {
+                "AndGate", "OrGate", "NotGate", "NandGate", "NorGate", "XorGate", "XnorGate"
+            };
             if (selectedGate >= 0 && selectedGate < 7) {
                 componentPreview.setComponentType(gateTypeNames[selectedGate], inputs);
             }
 
             ImGui::EndTabItem();
         }
-        
+
         if (ImGui::BeginTabItem("Inputs")) {
             selectedCategory = 1;
             ImGui::Combo("Input Type", &selectedInput, inputTypes, IM_ARRAYSIZE(inputTypes));
-            
+
             if (ImGui::Button("Add Input", ImVec2(-1, 0))) {
                 AddInput(selectedInput, sf::Vector2f(100, 100));
             }
-            static const char* inputTypeNames[] = { "Button", "Input Pin", "ClockComponent" };
+            static const char *inputTypeNames[] = {"Button", "Input Pin", "ClockComponent"};
             if (selectedInput >= 0 && selectedInput < 3) {
                 componentPreview.setComponentType(inputTypeNames[selectedInput], 1);
             }
 
             ImGui::EndTabItem();
         }
-        
+
         if (ImGui::BeginTabItem("Outputs")) {
             selectedCategory = 2;
             ImGui::Combo("Output Type", &selectedOutput, outputTypes, IM_ARRAYSIZE(outputTypes));
-            
+
             if (ImGui::Button("Add Output", ImVec2(-1, 0))) {
                 AddOutput(selectedOutput, sf::Vector2f(100, 100));
             }
 
-            static const char* outputTypeNames[] = { "Output Pin", "LEDComponent" };
+            static const char *outputTypeNames[] = {"Output Pin", "LEDComponent"};
             if (selectedOutput >= 0 && selectedOutput < 2) {
                 componentPreview.setComponentType(outputTypeNames[selectedOutput], 1);
             }
 
             ImGui::EndTabItem();
         }
-        
+
         if (ImGui::BeginTabItem("Other")) {
             selectedCategory = 3;
             ImGui::Combo("Component Type", &selectedOther, otherTypes, IM_ARRAYSIZE(otherTypes));
-            
+
             if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
                 AddOther(selectedOther, sf::Vector2f(100, 100));
             }
 
-            static const char* otherTypeNames[] = { "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop" };
+            static const char *otherTypeNames[] = {"SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop"};
             if (selectedOther >= 0 && selectedOther < 4) {
                 componentPreview.setComponentType(otherTypeNames[selectedOther], 1);
             }
 
             ImGui::EndTabItem();
         }
-        
+
         if (ImGui::BeginTabItem("Custom")) {
             selectedCategory = 4;
-            
+
             auto names = CustomComponentManager::getInstance().getDefinitionNames();
             if (names.empty()) {
                 ImGui::TextDisabled("No custom components available.");
                 ImGui::TextDisabled("Use File > Save As Custom Component.");
             } else {
                 std::string comboItems;
-                for (const auto& name : names) {
+                for (const auto &name: names) {
                     comboItems += name;
                     comboItems += '\0';
                 }
                 comboItems += '\0';
-                
+
                 if (selectedCustom >= static_cast<int>(names.size())) {
                     selectedCustom = 0;
                 }
-                
+
                 ImGui::Combo("Component", &selectedCustom, comboItems.c_str());
-                
-                const auto* def = CustomComponentManager::getInstance().getDefinition(names[selectedCustom]);
+
+                const auto *def = CustomComponentManager::getInstance().getDefinition(names[selectedCustom]);
                 if (def) {
                     ImGui::Text("Inputs: %d, Outputs: %d", def->numInputs, def->numOutputs);
                 }
-                
+
                 if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
                     AddCustomComponent(names[selectedCustom], sf::Vector2f(100, 100));
                 }
-                
+
                 componentPreview.setComponentType(names[selectedCustom], def ? def->numInputs : 0);
             }
-            
+
             ImGui::EndTabItem();
         }
-        
+
         ImGui::EndTabBar();
     }
-    
+
     ImGui::Separator();
-    
+
     if (ImGui::Button(componentPreview.isVisible() ? "Hide Preview" : "Show Preview"))
         showComponentPreview = !showComponentPreview;
 
     ImGui::Separator();
-    
+
     if (ImGui::Button("Clear All", ImVec2(-1, 0))) {
         circuit->clear();
     }
-    
+
     ImGui::End();
 }
 
@@ -451,16 +456,16 @@ void UIManager::DrawSimulationControl() {
         circuit->tickClocks();
         circuit->update();
     }
-    
+
     ImGui::Separator();
     bool prevDrawPins = shouldDrawPins;
     bool prevDrawLabels = shouldDrawLabels;
     ImGui::Checkbox("Draw all pins", &shouldDrawPins);
     ImGui::Checkbox("Draw all labels", &shouldDrawLabels);
-    
+
     if (prevDrawPins != shouldDrawPins) circuit->setDrawAllPins(shouldDrawPins);
     if (prevDrawLabels != shouldDrawLabels) circuit->setDrawLabels(shouldDrawLabels);
-    
+
     ImGui::Separator();
     ImGui::Text("Grid:");
     bool showGrid = circuit->getShowGrid();
@@ -475,17 +480,17 @@ void UIManager::DrawSimulationControl() {
     if (ImGui::SliderFloat("Grid Size", &gridSize, 10.0f, 50.0f, "%.0f")) {
         circuit->setGridSize(gridSize);
     }
-    
+
     ImGui::Separator();
     ImGui::Text("View Control:");
     ImGui::TextDisabled("(Use Mouse Wheel to Zoom/Pan)");
-    
+
     ImGui::End();
 }
 
 void UIManager::DrawComponentList() {
     ImGui::Begin("Component List", &showComponentList);
-    const auto& components = circuit->GetComponents();
+    const auto &components = circuit->GetComponents();
     for (int i = 0; i < static_cast<int>(components.size()); i++) {
         ImGui::PushID(i);
         ImGui::Text("%s", components[i]->GetLabel().c_str());
@@ -510,17 +515,17 @@ void UIManager::DrawContextMenu() {
         ImGui::OpenPopup("ComponentContextMenu");
     }
     if (ImGui::BeginPopup("ComponentContextMenu")) {
-        Component* targetComp = circuit->getComponentById(contextMenuTargetId);
-        
+        Component *targetComp = circuit->getComponentById(contextMenuTargetId);
+
         if (ImGui::MenuItem("Delete")) {
             circuit->removeComponent(contextMenuTargetId);
             contextMenuTargetId = -1;
         }
-        
+
         if (targetComp && ImGui::BeginMenu("Plot Pin...")) {
-            const auto& inputs = targetComp->getInputs();
-            const auto& outputs = targetComp->getOutputs();
-            
+            const auto &inputs = targetComp->getInputs();
+            const auto &outputs = targetComp->getOutputs();
+
             bool hasPins = !inputs.empty() || !outputs.empty();
             bool atMaxCapacity = pinPlotter.getPinCount() >= PinPlotter::MAX_PINS;
             if (atMaxCapacity) {
@@ -561,14 +566,15 @@ void UIManager::DrawContextMenu() {
 
 void UIManager::DrawStatus() {
     if (!statusMessage.empty()) {
-        ImGui::Begin("Status", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Status", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("%s", statusMessage.c_str());
         ImGui::End();
     }
 }
 
 void UIManager::AddGate(int gateType, sf::Vector2f pos) {
-    static const char* gateTypeMap[] = {
+    static const char *gateTypeMap[] = {
         "AndGate", "OrGate", "NotGate",
         "NandGate", "NorGate", "XorGate", "XnorGate"
     };
@@ -578,15 +584,16 @@ void UIManager::AddGate(int gateType, sf::Vector2f pos) {
 }
 
 void UIManager::AddInput(int inputType, sf::Vector2f pos) {
-    static const char* inputTypeMap[] = {
+    static const char *inputTypeMap[] = {
         "Button", "Input Pin", "ClockComponent"
     };
     if (inputType >= 0 && inputType < 3) {
         int thirdParam = 2; // Default for gates
-        if (inputType == 1) { // Input Pin
+        if (inputType == 1) {
+            // Input Pin
             // Calculate the next index based on existing Input Pins
             int inputIndex = 0;
-            for (const auto& comp : circuit->GetComponents()) {
+            for (const auto &comp: circuit->GetComponents()) {
                 if (comp->getType() == "Input Pin") {
                     inputIndex++;
                 }
@@ -598,27 +605,29 @@ void UIManager::AddInput(int inputType, sf::Vector2f pos) {
 }
 
 void UIManager::AddOutput(int outputType, sf::Vector2f pos) {
-    static const char* outputTypeMap[] = {
+    static const char *outputTypeMap[] = {
         "Output Pin", "LEDComponent"
     };
     if (outputType >= 0 && outputType < 2) {
         int thirdParam = 2; // Default
-        if (outputType == 0) { // Output Pin
+        if (outputType == 0) {
+            // Output Pin
             // Calculate the next index based on existing Output Pins
             int outputIndex = 0;
-            for (const auto& comp : circuit->GetComponents()) {
+            for (const auto &comp: circuit->GetComponents()) {
                 if (comp->getType() == "Output Pin") {
                     outputIndex++;
                 }
             }
             thirdParam = outputIndex;
         }
-        circuit->addComponent(ComponentFactory::create(outputTypeMap[outputType], circuit->getNextId(), pos, thirdParam));
+        circuit->addComponent(
+            ComponentFactory::create(outputTypeMap[outputType], circuit->getNextId(), pos, thirdParam));
     }
 }
 
 void UIManager::AddOther(int otherType, sf::Vector2f pos) {
-    static const char* otherTypeMap[] = {
+    static const char *otherTypeMap[] = {
         "SRFlipFlop", "DFlipFlop", "JKFlipFlop", "TFlipFlop"
     };
     if (otherType >= 0 && otherType < 4) {
@@ -626,11 +635,11 @@ void UIManager::AddOther(int otherType, sf::Vector2f pos) {
     }
 }
 
-void UIManager::AddCustomComponent(const std::string& name, sf::Vector2f pos) {
+void UIManager::AddCustomComponent(const std::string &name, sf::Vector2f pos) {
     circuit->addComponent(ComponentFactory::createCustom(circuit->getNextId(), pos, name));
 }
 
-void UIManager::setStatusMessage(const std::string& message) {
+void UIManager::setStatusMessage(const std::string &message) {
     statusMessage = message;
     statusMessageTimer = 0.0f;
 }

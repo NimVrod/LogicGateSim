@@ -3,13 +3,12 @@
 #include "../Include/ResourceManager.h"
 
 LEDComponent::LEDComponent(int id, sf::Vector2f position, sf::Color onColor)
-    : Component(id, position), lit(false), onColor(onColor), offColor(sf::Color(60, 60, 60))
-{
+    : Component(id, position), lit(false), onColor(onColor), offColor(sf::Color(60, 60, 60)) {
     body.setRadius(15.f);
     body.setFillColor(offColor);
     body.setOutlineColor(sf::Color::White);
     body.setOutlineThickness(2.f);
-    
+
     addInput(sf::Vector2f(0.f, 15.f));
 }
 
@@ -29,22 +28,22 @@ std::string LEDComponent::getType() const {
     return "LEDComponent";
 }
 
-void LEDComponent::draw(sf::RenderTarget& target) {
+void LEDComponent::draw(sf::RenderTarget &target) {
     sf::Vector2f pos = getPosition();
-    
+
     if (lit) {
         body.setFillColor(onColor);
     } else {
         body.setFillColor(offColor);
     }
-    
+
     body.setPosition(pos);
     target.draw(body);
 }
 
-void LEDComponent::drawLabel(sf::RenderTarget& target) {
-    ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getDefaultFont();
+void LEDComponent::drawLabel(sf::RenderTarget &target) {
+    ResourceManager &rm = ResourceManager::getInstance();
+    sf::Font &font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);

@@ -4,33 +4,31 @@
 #include "SFML/Graphics/Text.hpp"
 
 
-
 Component::Component(int id, sf::Vector2f position)
-    : id(id), position(position)
-{
+    : id(id), position(position) {
 }
 
-void Component::draw(sf::RenderTarget& target) {
+void Component::draw(sf::RenderTarget &target) {
 }
 
-void Component::drawPins(sf::RenderTarget& target) {
-    for (const auto& pin : inputs) {
+void Component::drawPins(sf::RenderTarget &target) {
+    for (const auto &pin: inputs) {
         pin->draw(target);
     }
-    for (const auto& pin : outputs) {
+    for (const auto &pin: outputs) {
         pin->draw(target);
     }
 }
 
-void Component::drawLabel(sf::RenderTarget& target) {
-    ResourceManager& rm = ResourceManager::getInstance();
-    sf::Font& font = rm.getDefaultFont();
+void Component::drawLabel(sf::RenderTarget &target) {
+    ResourceManager &rm = ResourceManager::getInstance();
+    sf::Font &font = rm.getDefaultFont();
     sf::Text text(font);
     text.setString(GetLabel());
     text.setCharacterSize(14);
     text.setFillColor(sf::Color::White);
     auto longer = std::max(getInputs().size(), getOutputs().size());
-    text.setPosition(sf::Vector2f(position.x - 10.f, position.y + longer * 20.f + 10.f ));
+    text.setPosition(sf::Vector2f(position.x - 10.f, position.y + longer * 20.f + 10.f));
     target.draw(text);
 }
 
@@ -46,20 +44,20 @@ sf::FloatRect Component::getBounds() const {
     return sf::FloatRect(position, sf::Vector2f(60.f, 40.f));
 }
 
-const std::vector<std::unique_ptr<Pin>>& Component::getInputs() const {
+const std::vector<std::unique_ptr<Pin> > &Component::getInputs() const {
     return inputs;
 }
 
-const std::vector<std::unique_ptr<Pin>>& Component::getOutputs() const {
+const std::vector<std::unique_ptr<Pin> > &Component::getOutputs() const {
     return outputs;
 }
 
-Pin* Component::addInput(sf::Vector2f relPos) {
+Pin *Component::addInput(sf::Vector2f relPos) {
     inputs.push_back(std::make_unique<Pin>(this, PinType::Input, relPos));
     return inputs.back().get();
 }
 
-Pin* Component::addOutput(sf::Vector2f relPos) {
+Pin *Component::addOutput(sf::Vector2f relPos) {
     outputs.push_back(std::make_unique<Pin>(this, PinType::Output, relPos));
     return outputs.back().get();
 }

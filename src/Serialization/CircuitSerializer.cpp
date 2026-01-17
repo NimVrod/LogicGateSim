@@ -1,85 +1,70 @@
 #include "CircuitSerializer.h"
 #include "../Simulation/Circuit.h"
 #include "../Core/Components/Include/Button.h"
-#include "../Core/Components/Include/AndGate.h"
-#include "../Core/Components/Include/OrGate.h"
-#include "../Core/Components/Include/NotGate.h"
-#include "../Core/Components/Include/NandGate.h"
-#include "../Core/Components/Include/NorGate.h"
-#include "../Core/Components/Include/XorGate.h"
-#include "../Core/Components/Include/XnorGate.h"
 #include "../Core/Components/Include/InputComponent.h"
 #include "../Core/Components/Include/OutputComponent.h"
 #include "../Core/Components/CustomComponent/CustomComponent.h"
-#include "../Core/Components/Include/ClockComponent.h"
-#include "../Core/Components/Include/LEDComponent.h"
-#include "../Core/Components/Include/SRFlipFlop.h"
-#include "../Core/Components/Include/DFlipFlop.h"
-#include "../Core/Components/Include/JKFlipFlop.h"
-#include "../Core/Components/Include/TFlipFlop.h"
 #include <tinyxml2.h>
 #include <filesystem>
 #include <iostream>
 #include <unordered_map>
 #include <fstream>
-#include <functional>
-
 #include "Core/Components/Include/ComponentFactory.h"
-#include "Core/Components/CustomComponent/CustomComponentManager.h"
 
 const std::string CircuitSerializer::currentVersion = "0.2";
 
 
-std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
+std::string CircuitSerializer::saveToXmlString(const Circuit &circuit) {
     tinyxml2::XMLDocument doc;
 
-    auto* declaration = doc.NewDeclaration();
+    auto *declaration = doc.NewDeclaration();
     doc.InsertFirstChild(declaration);
 
-    auto* root = doc.NewElement("Circuit");
+    auto *root = doc.NewElement("Circuit");
     root->SetAttribute("version", currentVersion.c_str());
     doc.InsertEndChild(root);
 
-    auto* componentsElem = doc.NewElement("Components");
+    auto *componentsElem = doc.NewElement("Components");
     root->InsertEndChild(componentsElem);
 
-    for (const auto& comp : circuit.GetComponents()) {
-        auto* compElem = doc.NewElement("Component");
+    for (const auto &comp: circuit.GetComponents()) {
+        auto *compElem = doc.NewElement("Component");
         compElem->SetAttribute("id", comp->GetId());
         compElem->SetAttribute("type", comp->getType().c_str());
         compElem->SetAttribute("x", comp->getPosition().x);
         compElem->SetAttribute("y", comp->getPosition().y);
         compElem->SetAttribute("numInputs", static_cast<int>(comp->getInputs().size()));
         compElem->SetAttribute("numOutputs", static_cast<int>(comp->getOutputs().size()));
-        
+
         if (comp->getType() == "Input Pin") {
-            if (auto* inputComp = dynamic_cast<InputComponent*>(comp.get()))
+            if (auto *inputComp = dynamic_cast<InputComponent *>(comp.get()))
                 compElem->SetAttribute("index", inputComp->getIndex());
         } else if (comp->getType() == "Output Pin") {
-            if (auto* outputComp = dynamic_cast<OutputComponent*>(comp.get()))
+            if (auto *outputComp = dynamic_cast<OutputComponent *>(comp.get()))
                 compElem->SetAttribute("index", outputComp->getIndex());
-        } else if (CustomComponentManager::getInstance().hasDefinition(comp->getType())) {
-            if (auto* customComp = dynamic_cast<CustomComponent*>(comp.get()))
-                compElem->SetAttribute("definitionName", customComp->getDefinitionName().c_str());
+        } else if (comp->getType() == "CustomComponent") {
+            if (auto *customComp = dynamic_cast<CustomComponent *>(comp.get())) {
+                compElem->SetAttribute("customType", customComp->getDefinitionName().c_str());
+            }
         }
 
         componentsElem->InsertEndChild(compElem);
     }
 
-    auto* wiresElem = doc.NewElement("Wires");
+    auto *wiresElem = doc.NewElement("Wires");
     root->InsertEndChild(wiresElem);
 
-    for (const auto& wire : circuit.getWires()) {
-        auto* wireElem = doc.NewElement("Wire");
+    for (const auto &wire: circuit.getWires()) {
+        auto *wireElem = doc.NewElement("Wire");
 
-        Pin* startPin = wire->getStartPin();
-        Pin* endPin = wire->getEndPin();
+        Pin *startPin = wire->getStartPin();
+        Pin *endPin = wire->getEndPin();
 
         int fromCompId = startPin->getParent()->GetId();
         int toCompId = endPin->getParent()->GetId();
 
         int fromPinIdx = 0;
-        const auto& outputs = startPin->getParent()->getOutputs();
+        const auto &outputs = startPin->getParent()->getOutputs();
         for (size_t i = 0; i < outputs.size(); ++i) {
             if (outputs[i].get() == startPin) {
                 fromPinIdx = static_cast<int>(i);
@@ -88,7 +73,7 @@ std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
         }
 
         int toPinIdx = 0;
-        const auto& inputs = endPin->getParent()->getInputs();
+        const auto &inputs = endPin->getParent()->getInputs();
         for (size_t i = 0; i < inputs.size(); ++i) {
             if (inputs[i].get() == endPin) {
                 toPinIdx = static_cast<int>(i);
@@ -109,7 +94,7 @@ std::string CircuitSerializer::saveToXmlString(const Circuit& circuit) {
     return std::string(printer.CStr());
 }
 
-bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& filepath) {
+bool CircuitSerializer::saveToFile(const Circuit &circuit, const std::string &filepath) {
     std::string xmlContent = saveToXmlString(circuit);
     std::ofstream file(filepath);
     if (!file.is_open())
@@ -118,11 +103,12 @@ bool CircuitSerializer::saveToFile(const Circuit& circuit, const std::string& fi
     return file.good();
 }
 
-bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElement* root, bool strictVersion) {
-    const char* version = root->Attribute("version");
+bool CircuitSerializer::loadFromXmlElement(Circuit &circuit, tinyxml2::XMLElement *root, bool strictVersion) {
+    const char *version = root->Attribute("version");
     if (strictVersion) {
         if (!version || strcmp(version, currentVersion.c_str()) != 0) {
-            std::cout << "Warning: Circuit version mismatch. Expected " << currentVersion<< " but found " << (version ? version : "unknown") << ".\n";
+            std::cout << "Warning: Circuit version mismatch. Expected " << currentVersion << " but found " << (
+                version ? version : "unknown") << ".\n";
             return false;
         }
     } else if (version && strcmp(version, currentVersion.c_str()) != 0) {
@@ -131,16 +117,15 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
 
     circuit.clear();
 
-    std::unordered_map<int, Component*> idToComponent;
+    std::unordered_map<int, Component *> idToComponent;
     int maxId = 0;
 
-    auto* componentsElem = root->FirstChildElement("Components");
+    auto *componentsElem = root->FirstChildElement("Components");
     if (componentsElem) {
-        for (auto* compElem = componentsElem->FirstChildElement("Component");
+        for (auto *compElem = componentsElem->FirstChildElement("Component");
              compElem;
              compElem = compElem->NextSiblingElement("Component")) {
-
-            const char* type = compElem->Attribute("type");
+            const char *type = compElem->Attribute("type");
             if (!type) continue;
 
             int id = compElem->IntAttribute("id");
@@ -149,9 +134,16 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
             if (strcmp(type, "Input Pin") == 0 || strcmp(type, "Output Pin") == 0) {
                 thirdParam = compElem->IntAttribute("index", 0);
             }
+            if (strcmp(type, "CustomComponent") == 0) {
+                const char *customType = compElem->Attribute("customType");
+                if (customType)
+                    type = customType; //Component factory create handles custom component types
+            }
+
             auto comp = ComponentFactory::create(type,
                                                  id,
-                                                 sf::Vector2f(compElem->FloatAttribute("x"), compElem->FloatAttribute("y")),
+                                                 sf::Vector2f(compElem->FloatAttribute("x"),
+                                                              compElem->FloatAttribute("y")),
                                                  thirdParam);
             if (comp) {
                 idToComponent[id] = comp.get();
@@ -163,12 +155,11 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
 
     circuit.setNextId(maxId + 1);
 
-    auto* wiresElem = root->FirstChildElement("Wires");
+    auto *wiresElem = root->FirstChildElement("Wires");
     if (wiresElem) {
-        for (auto* wireElem = wiresElem->FirstChildElement("Wire");
+        for (auto *wireElem = wiresElem->FirstChildElement("Wire");
              wireElem;
              wireElem = wireElem->NextSiblingElement("Wire")) {
-
             int fromCompId = wireElem->IntAttribute("fromComponent");
             int fromPinIdx = wireElem->IntAttribute("fromPin");
             int toCompId = wireElem->IntAttribute("toComponent");
@@ -178,16 +169,16 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
             auto toIt = idToComponent.find(toCompId);
 
             if (fromIt != idToComponent.end() && toIt != idToComponent.end()) {
-                Component* fromComp = fromIt->second;
-                Component* toComp = toIt->second;
+                Component *fromComp = fromIt->second;
+                Component *toComp = toIt->second;
 
-                const auto& outputs = fromComp->getOutputs();
-                const auto& inputs = toComp->getInputs();
+                const auto &outputs = fromComp->getOutputs();
+                const auto &inputs = toComp->getInputs();
 
                 if (fromPinIdx < static_cast<int>(outputs.size()) &&
                     toPinIdx < static_cast<int>(inputs.size())) {
-                    Pin* startPin = outputs[fromPinIdx].get();
-                    Pin* endPin = inputs[toPinIdx].get();
+                    Pin *startPin = outputs[fromPinIdx].get();
+                    Pin *endPin = inputs[toPinIdx].get();
                     circuit.addWire(startPin, endPin);
                 }
             }
@@ -197,7 +188,7 @@ bool CircuitSerializer::loadFromXmlElement(Circuit& circuit, tinyxml2::XMLElemen
     return true;
 }
 
-bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepath) {
+bool CircuitSerializer::loadFromFile(Circuit &circuit, const std::string &filepath) {
     if (!std::filesystem::exists(filepath))
         return false;
 
@@ -205,14 +196,14 @@ bool CircuitSerializer::loadFromFile(Circuit& circuit, const std::string& filepa
     if (doc.LoadFile(filepath.c_str()) != tinyxml2::XML_SUCCESS)
         return false;
 
-    auto* root = doc.FirstChildElement("Circuit");
+    auto *root = doc.FirstChildElement("Circuit");
     if (!root)
         return false;
 
     return loadFromXmlElement(circuit, root, true);
 }
 
-bool CircuitSerializer::loadFromXmlString(Circuit& circuit, const std::string& xmlString) {
+bool CircuitSerializer::loadFromXmlString(Circuit &circuit, const std::string &xmlString) {
     if (xmlString.empty())
         return false;
 
@@ -220,7 +211,7 @@ bool CircuitSerializer::loadFromXmlString(Circuit& circuit, const std::string& x
     if (doc.Parse(xmlString.c_str()) != tinyxml2::XML_SUCCESS)
         return false;
 
-    auto* root = doc.FirstChildElement("Circuit");
+    auto *root = doc.FirstChildElement("Circuit");
     if (!root)
         return false;
 

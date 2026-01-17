@@ -12,13 +12,13 @@ void Circuit::addComponent(std::unique_ptr<Component> component) {
     state = circuitState::DraggingComponent;
 }
 
-void Circuit::addWire(Pin* start, Pin* end) {
+void Circuit::addWire(Pin *start, Pin *end) {
     if (start && end && start != end) {
         if (start->getType() == PinType::Input && end->getType() == PinType::Output) {
             std::swap(start, end); // Ensure start is Output and end is Input
         }
         if (start->getType() == PinType::Output && end->getType() == PinType::Input) {
-             wires.push_back(std::make_unique<Wire>(start, end));
+            wires.push_back(std::make_unique<Wire>(start, end));
         }
     }
 }
@@ -34,31 +34,31 @@ void Circuit::clear() {
 }
 
 void Circuit::tickClocks() {
-    for (auto& comp : components) {
-        if (auto* clock = dynamic_cast<ClockComponent*>(comp.get())) {
+    for (auto &comp: components) {
+        if (auto *clock = dynamic_cast<ClockComponent *>(comp.get())) {
             clock->tick();
         }
     }
 }
 
 void Circuit::update() {
-    for (auto& wire : wires) {
+    for (auto &wire: wires) {
         wire->update();
     }
-    for (auto& comp : components) {
+    for (auto &comp: components) {
         comp->calculate();
     }
 }
 
-void Circuit::draw(sf::RenderWindow& window) {
+void Circuit::draw(sf::RenderWindow &window) {
     if (showGrid) {
         drawGrid(window);
     }
-    
-    for (auto& wire : wires) {
+
+    for (auto &wire: wires) {
         wire->draw(window);
     }
-    for (auto& comp : components) {
+    for (auto &comp: components) {
         comp->draw(window);
         if (drawAllPins)
             comp->drawPins(window);
@@ -75,7 +75,7 @@ void Circuit::draw(sf::RenderWindow& window) {
         selectedPin->draw(window);
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
         sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-        
+
         sf::Vertex line[] = {
             sf::Vertex{selectedPin->getPosition(), sf::Color::Yellow},
             sf::Vertex{worldPos, sf::Color::Yellow}
@@ -84,21 +84,21 @@ void Circuit::draw(sf::RenderWindow& window) {
     }
 }
 
-void Circuit::drawGrid(sf::RenderWindow& window) {
+void Circuit::drawGrid(sf::RenderWindow &window) {
     sf::View view = window.getView();
     sf::Vector2f viewCenter = view.getCenter();
     sf::Vector2f viewSize = view.getSize();
-    
+
     float left = viewCenter.x - viewSize.x / 2;
     float right = viewCenter.x + viewSize.x / 2;
     float top = viewCenter.y - viewSize.y / 2;
     float bottom = viewCenter.y + viewSize.y / 2;
-    
+
     float startX = std::floor(left / gridSize) * gridSize;
     float startY = std::floor(top / gridSize) * gridSize;
-    
+
     sf::Color gridColor(50, 50, 50);
-    
+
     for (float x = startX; x <= right; x += gridSize) {
         sf::Vertex line[] = {
             sf::Vertex{sf::Vector2f(x, top), gridColor},
@@ -106,7 +106,7 @@ void Circuit::drawGrid(sf::RenderWindow& window) {
         };
         window.draw(line, 2, sf::PrimitiveType::Lines);
     }
-    
+
     for (float y = startY; y <= bottom; y += gridSize) {
         sf::Vertex line[] = {
             sf::Vertex{sf::Vector2f(left, y), gridColor},
@@ -132,17 +132,17 @@ void Circuit::setDrawLabels(bool draw) {
     drawLabels = draw;
 }
 
-Pin* Circuit::getPinAt(sf::Vector2f pos) {
+Pin *Circuit::getPinAt(sf::Vector2f pos) {
     auto radius = Pin::RADIUS + 2.0f;
-    for (auto& comp : components) {
-        for (auto& pin : comp->getInputs()) {
+    for (auto &comp: components) {
+        for (auto &pin: comp->getInputs()) {
             sf::Vector2f pinPos = pin->getPosition();
-            float distSq = (pos.x - pinPos.x)*(pos.x - pinPos.x) + (pos.y - pinPos.y)*(pos.y - pinPos.y);
+            float distSq = (pos.x - pinPos.x) * (pos.x - pinPos.x) + (pos.y - pinPos.y) * (pos.y - pinPos.y);
             if (distSq < radius * radius) return pin.get();
         }
-        for (auto& pin : comp->getOutputs()) {
+        for (auto &pin: comp->getOutputs()) {
             sf::Vector2f pinPos = pin->getPosition();
-            float distSq = (pos.x - pinPos.x)*(pos.x - pinPos.x) + (pos.y - pinPos.y)*(pos.y - pinPos.y);
+            float distSq = (pos.x - pinPos.x) * (pos.x - pinPos.x) + (pos.y - pinPos.y) * (pos.y - pinPos.y);
             if (distSq < radius * radius) return pin.get();
         }
     }
@@ -155,8 +155,8 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
     if (event.is<sf::Event::MouseMoved>()) {
         hoveredComponent = nullptr;
-        for (auto & component : std::ranges::reverse_view(components)) {
-            Component* comp = component.get();
+        for (auto &component: std::ranges::reverse_view(components)) {
+            Component *comp = component.get();
             if (comp->getBounds().contains(worldPos)) {
                 hoveredComponent = comp;
                 break;
@@ -182,20 +182,20 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
         return;
     }
 
-    if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
+    if (const auto *mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>()) {
         switch (state) {
             case circuitState::Idle:
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                    if (Pin* clickedPin = getPinAt(worldPos)) {
+                    if (Pin *clickedPin = getPinAt(worldPos)) {
                         selectedPin = clickedPin;
                         state = circuitState::CreatingWire;
                         return;
                     }
 
-                    for (auto & component : std::ranges::reverse_view(components)) {
-                        Component* comp = component.get();
+                    for (auto &component: std::ranges::reverse_view(components)) {
+                        Component *comp = component.get();
                         if (comp->getBounds().contains(worldPos)) {
-                            if (auto* button = dynamic_cast<Button*>(comp)) {
+                            if (auto *button = dynamic_cast<Button *>(comp)) {
                                 sf::FloatRect bounds = button->getBounds();
                                 float margin = bounds.size.x * 0.2f;
                                 sf::FloatRect innerBounds(
@@ -213,10 +213,9 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
                             return;
                         }
                     }
-                }
-                else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
-                    for (auto & component : std::ranges::reverse_view(components)) {
-                        Component* comp = component.get();
+                } else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
+                    for (auto &component: std::ranges::reverse_view(components)) {
+                        Component *comp = component.get();
                         if (comp->getBounds().contains(worldPos)) {
                             contextMenuComponentId = comp->GetId();
                             return;
@@ -227,13 +226,12 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 
             case circuitState::CreatingWire:
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                    if (Pin* targetPin = getPinAt(worldPos); targetPin && targetPin != selectedPin) {
+                    if (Pin *targetPin = getPinAt(worldPos); targetPin && targetPin != selectedPin) {
                         addWire(selectedPin, targetPin);
                     }
                     selectedPin = nullptr;
                     state = circuitState::Idle;
-                }
-                else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
+                } else if (mouseButtonPressed->button == sf::Mouse::Button::Right) {
                     selectedPin = nullptr;
                     state = circuitState::Idle;
                 }
@@ -263,7 +261,7 @@ void Circuit::handleEvent(const sf::Event &event, sf::RenderWindow &window) {
 }
 
 void Circuit::GotoComponent(int id, sf::RenderWindow &window) {
-    for (auto& comp : components) {
+    for (auto &comp: components) {
         if (comp->GetId() == id) {
             sf::Vector2f compPos = comp->getPosition();
             sf::Mouse::setPosition(sf::Vector2i(static_cast<int>(compPos.x), static_cast<int>(compPos.y)), window);
@@ -277,20 +275,18 @@ circuitState Circuit::getState() const {
     return state;
 }
 
-const std::vector<std::unique_ptr<Component>>& Circuit::GetComponents() const {
+const std::vector<std::unique_ptr<Component> > &Circuit::GetComponents() const {
     return components;
 }
 
 void Circuit::removeComponent(int id) {
-    for (size_t i = 0; i < components.size(); i++)
-    {
-        if (components[i]->GetId() == id)
-        {
-            Component* compToRemove = components[i].get();
+    for (size_t i = 0; i < components.size(); i++) {
+        if (components[i]->GetId() == id) {
+            Component *compToRemove = components[i].get();
 
             // Remove wires connected to this component's pins
             std::erase_if(wires,
-                          [compToRemove](const std::unique_ptr<Wire>& wire) {
+                          [compToRemove](const std::unique_ptr<Wire> &wire) {
                               return wire->getStartPin()->getParent() == compToRemove ||
                                      wire->getEndPin()->getParent() == compToRemove;
                           });
@@ -307,7 +303,7 @@ void Circuit::removeComponent(int id) {
 
             components.erase(components.begin() + i);
             break;
-		}
+        }
     }
 }
 
@@ -319,12 +315,12 @@ void Circuit::setNextId(int id) {
     nextComponentId = id;
 }
 
-const std::vector<std::unique_ptr<Wire>>& Circuit::getWires() const {
+const std::vector<std::unique_ptr<Wire> > &Circuit::getWires() const {
     return wires;
 }
 
-Component* Circuit::getComponentById(int id) const {
-    for (auto& comp : components) {
+Component *Circuit::getComponentById(int id) const {
+    for (auto &comp: components) {
         if (comp->GetId() == id) {
             return comp.get();
         }

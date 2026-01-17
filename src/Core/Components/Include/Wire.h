@@ -4,15 +4,16 @@
 
 class Wire {
 public:
-    Wire(Pin* start, Pin* end);
-    
-    void update();
-    void draw(sf::RenderTarget& target);
+    Wire(Pin *start, Pin *end);
 
-    Pin* getStartPin() const { return start; }
-    Pin* getEndPin() const { return end; }
+    void update();
+
+    void draw(sf::RenderTarget &target);
+
+    Pin *getStartPin() const { return start; }
+    Pin *getEndPin() const { return end; }
 
 private:
-    Pin* start;
-    Pin* end;
+    Pin *start;
+    Pin *end;
 };

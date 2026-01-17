@@ -11,27 +11,31 @@
 #include "ComponentPreview.h"
 #include "PinPlotter.h"
 
-class UIManager
-{
+class UIManager {
 public:
-    static UIManager& getInstance();
-    
-    UIManager(const UIManager&) = delete;
-    UIManager& operator=(const UIManager&) = delete;
+    static UIManager &getInstance();
 
-    void Init(sf::RenderWindow& window, Circuit& circuit);
+    UIManager(const UIManager &) = delete;
+
+    UIManager &operator=(const UIManager &) = delete;
+
+    void Init(sf::RenderWindow &window, Circuit &circuit);
+
     void Update(sf::Time dt);
+
     void Render();
 
     bool ShouldClose() const { return shouldClose; }
-    void setStatusMessage(const std::string& message);
+
+    void setStatusMessage(const std::string &message);
 
 private:
     UIManager() = default;
+
     ~UIManager() = default;
 
-    sf::RenderWindow* window = nullptr;
-    Circuit* circuit = nullptr;
+    sf::RenderWindow *window = nullptr;
+    Circuit *circuit = nullptr;
     ComponentPreview componentPreview;
     PinPlotter pinPlotter;
 
@@ -66,25 +70,35 @@ private:
     std::string pendingOpenPath;
     std::string customComponentName;
     std::string customComponentsFile = "custom_components.xml";
-    
+
     void DrawMenuBar();
+
     void DrawComponentPicker();
+
     void DrawSimulationControl();
+
     void DrawComponentList();
+
     void DrawContextMenu();
+
     void DrawStatus();
+
     void LoadTheme();
 
     void AddGate(int gateType, sf::Vector2f pos);
+
     void AddInput(int inputType, sf::Vector2f pos);
+
     void AddOutput(int outputType, sf::Vector2f pos);
+
     void AddOther(int otherType, sf::Vector2f pos);
-    void AddCustomComponent(const std::string& name, sf::Vector2f pos);
+
+    void AddCustomComponent(const std::string &name, sf::Vector2f pos);
 
     bool shouldClose = false;
 
-    static const char* gateTypes[];
-    static const char* inputTypes[];
-    static const char* outputTypes[];
-    static const char* otherTypes[];
+    static const char *gateTypes[];
+    static const char *inputTypes[];
+    static const char *outputTypes[];
+    static const char *otherTypes[];
 };

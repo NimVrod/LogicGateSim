@@ -20,37 +20,42 @@ struct CustomComponentDefinition;
 class CustomComponent : public Component {
 public:
     // Create from a definition
-    CustomComponent(int id, sf::Vector2f position, const std::string& definitionName);
-    
+    CustomComponent(int id, sf::Vector2f position, const std::string &definitionName);
+
     ~CustomComponent() override;
-    
+
     void calculate() override;
+
     std::string GetLabel() override;
+
     std::string getType() const override;
-    void draw(sf::RenderTarget& target) override;
-    void drawLabel(sf::RenderTarget& target) override;
+
+    void draw(sf::RenderTarget &target) override;
+
+    void drawLabel(sf::RenderTarget &target) override;
+
     sf::FloatRect getBounds() const override;
-    
+
     // Get the definition name for serialization
-    const std::string& getDefinitionName() const { return definitionName; }
-    
+    const std::string &getDefinitionName() const { return definitionName; }
+
     // Check if the internal circuit was loaded successfully
     bool isValid() const { return internalCircuit != nullptr; }
 
 protected:
     sf::RectangleShape body;
-    
+
 private:
     std::string definitionName;
     std::unique_ptr<Circuit> internalCircuit;
-    
+
     // Cached pointers to internal Input/Output components (sorted by index)
-    std::vector<InputComponent*> internalInputs;
-    std::vector<OutputComponent*> internalOutputs;
-    
+    std::vector<InputComponent *> internalInputs;
+    std::vector<OutputComponent *> internalOutputs;
+
     // Initialize the internal circuit from the definition
-    void initFromDefinition(const CustomComponentDefinition* def);
-    
+    void initFromDefinition(const CustomComponentDefinition *def);
+
     // Find and cache internal Input/Output components
     void cacheInternalComponents();
 };

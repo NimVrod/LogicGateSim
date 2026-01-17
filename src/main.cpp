@@ -8,8 +8,7 @@
 #include "Simulation/Circuit.h"
 #include "UI/Include/UIManager.h"
 
-int main()
-{
+int main() {
     const float MAX_ZOOM_IN = 0.1f;
     const float MAX_ZOOM_OUT = 10.0f;
 
@@ -18,15 +17,15 @@ int main()
     sf::ContextSettings contextSettings;
     contextSettings.antiAliasingLevel = 8;
 
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Simulator", sf::Style::Default, sf::State::Windowed, contextSettings);
+    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Simulator", sf::Style::Default, sf::State::Windowed,
+                            contextSettings);
     window.setFramerateLimit(60);
-    if (!ImGui::SFML::Init(window))
-    {
+    if (!ImGui::SFML::Init(window)) {
         NFD_Quit();
         return -1;
     }
 
-    ResourceManager& resourceManager = ResourceManager::getInstance();
+    ResourceManager &resourceManager = ResourceManager::getInstance();
 
     Circuit circuit;
     UIManager::getInstance().Init(window, circuit);
@@ -38,42 +37,35 @@ int main()
 
     sf::Clock deltaClock;
 
-    while (window.isOpen())
-    {
+    while (window.isOpen()) {
         if (UIManager::getInstance().ShouldClose())
             window.close();
 
         window.setView(circuitView);
 
-        while (const auto event = window.pollEvent())
-        {
+        while (const auto event = window.pollEvent()) {
             ImGui::SFML::ProcessEvent(window, *event);
 
-            if (event->is<sf::Event::Closed>())
-            {
+            if (event->is<sf::Event::Closed>()) {
                 window.close();
-            }
-            else if (!ImGui::GetIO().WantCaptureMouse)
-            {
-                if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+            } else if (!ImGui::GetIO().WantCaptureMouse) {
+                if (const auto *mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mousePressed->button == sf::Mouse::Button::Middle) {
                         isPanning = true;
                         lastMousePos = sf::Mouse::getPosition(window);
                     }
-                }
-                else if (const auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
+                } else if (const auto *mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
                     if (mouseReleased->button == sf::Mouse::Button::Middle) {
                         isPanning = false;
                     }
-                }
-                else if (event->is<sf::Event::MouseMoved>() && isPanning) {
+                } else if (event->is<sf::Event::MouseMoved>() && isPanning) {
                     sf::Vector2i currentMousePos = sf::Mouse::getPosition(window);
-                    sf::Vector2f delta = window.mapPixelToCoords(lastMousePos) - window.mapPixelToCoords(currentMousePos);
+                    sf::Vector2f delta = window.mapPixelToCoords(lastMousePos) - window.mapPixelToCoords(
+                                             currentMousePos);
                     circuitView.move(delta);
                     window.setView(circuitView);
                     lastMousePos = currentMousePos;
-                }
-                else if (const auto* mouseScrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
+                } else if (const auto *mouseScrolled = event->getIf<sf::Event::MouseWheelScrolled>()) {
                     if (mouseScrolled->wheel == sf::Mouse::Wheel::Vertical) {
                         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                         sf::Vector2f worldPosBefore = window.mapPixelToCoords(mousePos);
@@ -93,15 +85,15 @@ int main()
                         sf::Vector2f worldPosAfter = window.mapPixelToCoords(mousePos);
                         circuitView.move(worldPosBefore - worldPosAfter);
                         window.setView(circuitView);
-                    }
-
-                    else if (mouseScrolled->wheel == sf::Mouse::Wheel::Horizontal) {
-                        sf::Vector2f panAmount = (mouseScrolled->delta > 0) ? sf::Vector2f(-20.f, 0.f) : sf::Vector2f(20.f, 0.f);
+                    } else if (mouseScrolled->wheel == sf::Mouse::Wheel::Horizontal) {
+                        sf::Vector2f panAmount = (mouseScrolled->delta > 0)
+                                                     ? sf::Vector2f(-20.f, 0.f)
+                                                     : sf::Vector2f(20.f, 0.f);
                         circuitView.move(panAmount);
                         window.setView(circuitView);
                     }
                 }
-                
+
                 circuit.handleEvent(*event, window);
             }
         }
@@ -118,7 +110,7 @@ int main()
         // Reset to default view for UI rendering
         window.setView(window.getDefaultView());
         UIManager::getInstance().Render();
-        
+
         ImGui::SFML::Render(window);
         window.display();
     }
