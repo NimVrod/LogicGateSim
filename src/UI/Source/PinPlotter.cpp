@@ -1,6 +1,7 @@
 #include "../Include/PinPlotter.h"
 #include "imgui.h"
 #include <algorithm>
+#include <cfloat>
 
 bool PinPlotter::addPin(Pin *pin, const std::string &label) {
     if (!pin) return false;
@@ -50,13 +51,14 @@ void PinPlotter::renderUI() {
     if (!visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(200, 150), ImVec2(FLT_MAX, FLT_MAX));
 
-    if (ImGui::Begin("Pin Plotter", &visible)) {
+    if (ImGui::Begin("Wykres pinów", &visible)) {
         if (monitoredPins.empty()) {
-            ImGui::TextDisabled("No pins monitored.");
-            ImGui::TextDisabled("Right-click a component and select 'Plot Pin...'");
+            ImGui::TextDisabled("Brak monitorowanych pinów.");
+            ImGui::TextDisabled("Kliknij prawym na komponent i wybierz 'Wykres pinu...'");
         } else {
-            ImGui::Text("Monitored Pins: %zu / %zu", monitoredPins.size(), MAX_PINS);
+            ImGui::Text("Monitorowane piny: %zu / %zu", monitoredPins.size(), MAX_PINS);
             ImGui::Separator();
 
             for (size_t i = 0; i < monitoredPins.size();) {
@@ -66,7 +68,7 @@ void PinPlotter::renderUI() {
                 bool keepOpen = true;
                 if (ImGui::CollapsingHeader(mp.label.c_str(), &keepOpen, ImGuiTreeNodeFlags_DefaultOpen)) {
                     int currentValue = mp.pin ? mp.pin->getValue() : 0;
-                    ImGui::Text("Current: %d", currentValue);
+                    ImGui::Text("Aktualna: %d", currentValue);
 
                     if (!mp.history.empty()) {
                         std::vector values(mp.history.begin(), mp.history.end());
@@ -74,7 +76,7 @@ void PinPlotter::renderUI() {
                         ImGui::PlotLines("##plot", values.data(), static_cast<int>(values.size()),
                                          0, nullptr, 0.0f, 1.5f, ImVec2(-1, 60));
                     } else {
-                        ImGui::TextDisabled("No data yet");
+                        ImGui::TextDisabled("Brak danych");
                     }
                 }
 
@@ -88,8 +90,8 @@ void PinPlotter::renderUI() {
             }
 
             ImGui::Separator();
-            ImGui::SliderInt("Samples", &historySize, MIN_HISTORY, MAX_HISTORY);
-            if (ImGui::Button("Clear All")) {
+            ImGui::SliderInt("Próbki", &historySize, MIN_HISTORY, MAX_HISTORY);
+            if (ImGui::Button("Wyczyść wszystko")) {
                 clear();
             }
         }

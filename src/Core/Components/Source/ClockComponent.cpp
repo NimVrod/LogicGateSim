@@ -23,7 +23,7 @@ void ClockComponent::calculate() {
 }
 
 std::string ClockComponent::GetLabel() {
-    return std::format("{} : Clock", GetId());
+    return std::format("{} : Zegar", GetId());
 }
 
 std::string ClockComponent::getType() const {

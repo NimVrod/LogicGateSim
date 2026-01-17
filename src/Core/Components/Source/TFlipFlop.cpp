@@ -32,7 +32,7 @@ void TFlipFlop::calculate() {
 }
 
 std::string TFlipFlop::GetLabel() {
-    return std::format("{} : T FF", GetId());
+    return std::format("{} : Przerzutnik T", GetId());
 }
 
 std::string TFlipFlop::getType() const {

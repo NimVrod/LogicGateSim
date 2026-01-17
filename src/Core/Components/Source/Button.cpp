@@ -57,7 +57,7 @@ void Button::toggle() {
 }
 
 std::string Button::GetLabel() {
-    return std::format("{} : Button", GetId());
+    return std::format("{} : Przycisk", GetId());
 }
 
 std::string Button::getType() const {

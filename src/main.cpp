@@ -17,10 +17,26 @@ int main() {
     sf::ContextSettings contextSettings;
     contextSettings.antiAliasingLevel = 8;
 
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Logic Simulator", sf::Style::Default, sf::State::Windowed,
+    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Symulator logiczny", sf::Style::Default, sf::State::Windowed,
                             contextSettings);
     window.setFramerateLimit(60);
     if (!ImGui::SFML::Init(window)) {
+        NFD_Quit();
+        return -1;
+    }
+
+    // No polish characters in default font
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+    static const ImWchar polishRanges[] = {
+        0x0020, 0x00FF,
+        0x0100, 0x017F,
+        0,
+    };
+    io.Fonts->AddFontFromFileTTF("assets/ARIAL.TTF", 15.0f, nullptr, polishRanges);
+    if (!ImGui::SFML::UpdateFontTexture()) {
+        std::cerr << "Failed to update ImGui font texture\n";
+        ImGui::SFML::Shutdown();
         NFD_Quit();
         return -1;
     }

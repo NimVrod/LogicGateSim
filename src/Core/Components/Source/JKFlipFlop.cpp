@@ -38,7 +38,7 @@ void JKFlipFlop::calculate() {
 }
 
 std::string JKFlipFlop::GetLabel() {
-    return std::format("{} : JK FF", GetId());
+    return std::format("{} : Przerzutnik JK", GetId());
 }
 
 std::string JKFlipFlop::getType() const {

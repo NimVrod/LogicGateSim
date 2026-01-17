@@ -26,7 +26,7 @@ Gate::Gate(int id, sf::Vector2f position, int numInputs)
 }
 
 std::string Gate::GetLabel() {
-    return std::format("{} : Gate", GetId());
+    return std::format("{} : Bramka", GetId());
 }
 
 sf::FloatRect Gate::getBounds() const {

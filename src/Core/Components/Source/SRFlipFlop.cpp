@@ -36,7 +36,7 @@ void SRFlipFlop::calculate() {
 }
 
 std::string SRFlipFlop::GetLabel() {
-    return std::format("{} : SR FF", GetId());
+    return std::format("{} : Przerzutnik SR", GetId());
 }
 
 std::string SRFlipFlop::getType() const {

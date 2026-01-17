@@ -30,7 +30,7 @@ void DFlipFlop::calculate() {
 }
 
 std::string DFlipFlop::GetLabel() {
-    return std::format("{} : D FF", GetId());
+    return std::format("{} : Przerzutnik D", GetId());
 }
 
 std::string DFlipFlop::getType() const {

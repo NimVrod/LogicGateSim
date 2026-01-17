@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include <cmath>
+#include <cfloat>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -65,12 +66,13 @@ void ComponentPreview::renderUI() {
     if (!visible) return;
 
     ImGui::SetNextWindowSize(ImVec2(350, 450), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(200, 200), ImVec2(FLT_MAX, FLT_MAX));
 
-    if (ImGui::Begin("Component Preview", &visible)) {
+    if (ImGui::Begin("Podgląd komponentu", &visible)) {
         if (currentTypeName.empty()) {
-            ImGui::TextDisabled("Select a component to preview");
+            ImGui::TextDisabled("Wybierz komponent do podglądu");
         } else {
-            ImGui::Text("Component: %s", currentTypeName.c_str());
+            ImGui::Text("Komponent: %s", currentTypeName.c_str());
 
             // Types that don't show input count
             static const std::unordered_set<std::string> singleInputTypes = {
@@ -80,24 +82,24 @@ void ComponentPreview::renderUI() {
             };
 
             if (singleInputTypes.find(currentTypeName) == singleInputTypes.end() && previewComponent) {
-                ImGui::Text("Inputs: %zu", previewComponent->getInputs().size());
+                ImGui::Text("Wejścia: %zu", previewComponent->getInputs().size());
             }
 
             ImGui::Separator();
 
-            ImGui::Text("Preview:");
-            if (ImGui::Checkbox("Show Pins", &drawPins)) {
+            ImGui::Text("Podgląd:");
+            if (ImGui::Checkbox("Pokaż piny", &drawPins)) {
                 renderComponentToTexture();
             }
             if (textureInitialized && previewComponent) {
                 ImGui::Image(renderTexture, sf::Color::White, sf::Color(80, 80, 80));
             } else {
-                ImGui::TextDisabled("Preview not available");
+                ImGui::TextDisabled("Podgląd niedostępny");
             }
 
             ImGui::Separator();
 
-            ImGui::Text("Truth Table:");
+            ImGui::Text("Tablica prawdy:");
             renderTruthTableUI();
         }
     }
@@ -113,21 +115,21 @@ void ComponentPreview::generateTruthTable() {
     // Type-specific truth tables using unordered_map
     static const std::unordered_map<std::string, std::pair<std::vector<std::string>, std::vector<std::vector<
         std::string> > > > staticTables = {
-        {"Button", {{"State", "Output"}, {{"OFF", "0"}, {"ON", "1"}}}},
-        {"Input Pin", {{"Set Value", "Output"}, {{"0", "0"}, {"1", "1"}}}},
-        {"Output Pin", {{"Input", "Captured"}, {{"0", "0"}, {"1", "1"}}}},
-        {"ClockComponent", {{"Info"}, {{"Toggles on each"}, {"simulation tick"}}}},
-        {"LEDComponent", {{"Input", "Light"}, {{"0", "OFF"}, {"1", "ON"}}}},
+        {"Button", {{"Stan", "OUT"}, {{"OFF", "0"}, {"ON", "1"}}}},
+        {"Input Pin", {{"IN", "OUT"}, {{"0", "0"}, {"1", "1"}}}},
+        {"Output Pin", {{"IN", "OUT"}, {{"0", "0"}, {"1", "1"}}}},
+        {"ClockComponent", {{"Info"}, {{"-"}, {"-"}}}},
+        {"LEDComponent", {{"Input", "ON/OFF"}, {{"0", "OFF"}, {"1", "ON"}}}},
         {
             "SRFlipFlop",
-            {{"S", "R", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Invalid"}}}
+            {{"S", "R", "Q+"}, {{"0", "0", "Q"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "-"}}}
         },
-        {"DFlipFlop", {{"D", "Q(next)"}, {{"0", "0"}, {"1", "1"}}}},
+        {"DFlipFlop", {{"D", "Q+"}, {{"0", "0"}, {"1", "1"}}}},
         {
             "JKFlipFlop",
-            {{"J", "K", "Q(next)"}, {{"0", "0", "Q (hold)"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "Toggle"}}}
+            {{"J", "K", "Q+"}, {{"0", "0", "Q"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "-"}}}
         },
-        {"TFlipFlop", {{"T", "Q(next)"}, {{"0", "Q (hold)"}, {"1", "Toggle"}}}}
+        {"TFlipFlop", {{"T", "Q+"}, {{"0", "Q"}, {"1", "Toggle"}}}}
     };
 
     auto staticIt = staticTables.find(currentTypeName);
@@ -142,9 +144,9 @@ void ComponentPreview::generateTruthTable() {
         const auto *def = CustomComponentManager::getInstance().getDefinition(currentTypeName);
         if (def && def->numInputs > 8) {
             headers = {"Info"};
-            rows.push_back({"Inputs: " + std::to_string(def->numInputs)});
-            rows.push_back({"Outputs: " + std::to_string(def->numOutputs)});
-            rows.push_back({"(Table too large)"});
+            rows.push_back({"Wejścia: " + std::to_string(def->numInputs)});
+            rows.push_back({"Wyjścia: " + std::to_string(def->numOutputs)});
+            rows.push_back({"(Tablica zbyt duża)"});
             return;
         }
     }

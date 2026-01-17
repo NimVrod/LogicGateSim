@@ -23,7 +23,7 @@ void InputComponent::setExternalValue(int value) {
 }
 
 std::string InputComponent::GetLabel() {
-    return std::format("{} : Input {}", GetId(), index);
+    return std::format("{} : Wejście {}", GetId(), index);
 }
 
 std::string InputComponent::getType() const {

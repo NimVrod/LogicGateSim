@@ -20,7 +20,7 @@ void OutputComponent::calculate() {
 }
 
 std::string OutputComponent::GetLabel() {
-    return std::format("{} : Output {}", GetId(), index);
+    return std::format("{} : Wyjście {}", GetId(), index);
 }
 
 std::string OutputComponent::getType() const {

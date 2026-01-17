@@ -1,5 +1,6 @@
 #include "../Include/UIManager.h"
 #include <nfd.h>
+#include <cfloat>
 #include "../../Serialization/CircuitSerializer.h"
 #include "../../Core/Components/Include/ResourceManager.h"
 #include "../../Core/Components/Include/ComponentFactory.h"
@@ -8,8 +9,8 @@
 #include "../../Core/Components/CustomComponent/CustomComponentDefinition.h"
 
 const char *UIManager::gateTypes[] = {"AND", "OR", "NOT", "NAND", "NOR", "XOR", "XNOR"};
-const char *UIManager::inputTypes[] = {"Button", "Input Pin", "Clock"};
-const char *UIManager::outputTypes[] = {"Output Pin", "LED"};
+const char *UIManager::inputTypes[] = {"Przycisk", "Wejście", "Zegar"};
+const char *UIManager::outputTypes[] = {"Wyjście", "LED"};
 const char *UIManager::otherTypes[] = {"SR FF", "D FF", "JK FF", "T FF"};
 
 UIManager &UIManager::getInstance() {
@@ -145,10 +146,10 @@ void UIManager::Render() {
 
 void UIManager::DrawMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+        if (ImGui::BeginMenu("Plik")) {
+            if (ImGui::MenuItem("Zapisz", "Ctrl+S")) {
                 nfdu8char_t *outPath = nullptr;
-                nfdu8filteritem_t filters[1] = {{"Circuit Files", "xml"}};
+                nfdu8filteritem_t filters[1] = {{"circuitFiles", "xml"}};
                 nfdsavedialogu8args_t args = {0};
                 args.filterList = filters;
                 args.filterCount = 1;
@@ -158,17 +159,17 @@ void UIManager::DrawMenuBar() {
                 if (result == NFD_OKAY) {
                     currentFilePath = outPath;
                     if (CircuitSerializer::saveToFile(*circuit, currentFilePath)) {
-                        setStatusMessage("Saved: " + currentFilePath);
+                        setStatusMessage("Zapisano: " + currentFilePath);
                     } else {
-                        setStatusMessage("Failed to save circuit.");
+                        setStatusMessage("Nie udało się zapisać pliku.");
                     }
                     NFD_FreePathU8(outPath);
                 }
             }
 
-            if (ImGui::MenuItem("Open", "Ctrl+O")) {
+            if (ImGui::MenuItem("Otwórz", "Ctrl+O")) {
                 nfdu8char_t *outPath = nullptr;
-                nfdu8filteritem_t filters[1] = {{"Circuit Files", "xml"}};
+                nfdu8filteritem_t filters[1] = {{"circuitFiles", "xml"}};
                 nfdopendialogu8args_t args = {nullptr};
                 args.filterList = filters;
                 args.filterCount = 1;
@@ -181,7 +182,7 @@ void UIManager::DrawMenuBar() {
                 }
             }
 
-            if (ImGui::MenuItem("Save As Custom Component")) {
+            if (ImGui::MenuItem("Zapisz jako komponent")) {
                 bool hasInputs = false;
                 bool hasOutputs = false;
                 for (const auto &comp: circuit->GetComponents()) {
@@ -190,7 +191,7 @@ void UIManager::DrawMenuBar() {
                 }
 
                 if (!hasInputs && !hasOutputs) {
-                    setStatusMessage("Add Input/Output components to define the interface.");
+                    setStatusMessage("Dodaj komponenty wejścia/wyjścia, aby zdefiniować interfejs.");
                 } else {
                     customComponentName.clear();
                     showSaveAsCustomPopup = true;
@@ -199,28 +200,28 @@ void UIManager::DrawMenuBar() {
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Exit")) {
+            if (ImGui::MenuItem("Wyjdź")) {
                 shouldClose = true;
             }
 
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("View")) {
-            ImGui::MenuItem("Component Picker", nullptr, &showComponentPicker);
-            ImGui::MenuItem("Simulation Control", nullptr, &showSimulationControl);
-            ImGui::MenuItem("Component List", nullptr, &showComponentList);
-            ImGui::MenuItem("Component Preview", nullptr, &showComponentPreview);
-            ImGui::MenuItem("Pin Plotter", nullptr, &showPinPlotter);
+        if (ImGui::BeginMenu("Widok")) {
+            ImGui::MenuItem("Wybór komponentów", nullptr, &showComponentPicker);
+            ImGui::MenuItem("Sterowanie symulacją", nullptr, &showSimulationControl);
+            ImGui::MenuItem("Lista komponentów", nullptr, &showComponentList);
+            ImGui::MenuItem("Podgląd komponentu", nullptr, &showComponentPreview);
+            ImGui::MenuItem("Wykres pinów", nullptr, &showPinPlotter);
             ImGui::Separator();
-            if (ImGui::MenuItem("Show All")) {
+            if (ImGui::MenuItem("Pokaż wszystko")) {
                 showComponentPicker = true;
                 showSimulationControl = true;
                 showComponentList = true;
                 showComponentPreview = true;
                 showPinPlotter = true;
             }
-            if (ImGui::MenuItem("Hide All")) {
+            if (ImGui::MenuItem("Ukryj wszystko")) {
                 showComponentPicker = false;
                 showSimulationControl = false;
                 showComponentList = false;
@@ -233,26 +234,26 @@ void UIManager::DrawMenuBar() {
     }
 
     if (showOpenConfirmPopup) {
-        ImGui::OpenPopup("Confirm Open");
+        ImGui::OpenPopup("Potwierdź otwarcie");
     }
 
-    if (ImGui::BeginPopupModal("Confirm Open", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Opening a new circuit will overwrite the current one.");
-        ImGui::Text("Are you sure you want to continue?");
+    if (ImGui::BeginPopupModal("Potwierdź otwarcie", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Otwarcie nowego układu nadpisze obecny.");
+        ImGui::Text("Czy na pewno chcesz kontynuować?");
         ImGui::Separator();
 
-        if (ImGui::Button("Open", ImVec2(120, 0))) {
+        if (ImGui::Button("Otwórz", ImVec2(120, 0))) {
             if (CircuitSerializer::loadFromFile(*circuit, pendingOpenPath)) {
                 currentFilePath = pendingOpenPath;
-                setStatusMessage("Loaded: " + currentFilePath);
+                setStatusMessage("Wczytano: " + currentFilePath);
             } else {
-                setStatusMessage("Failed to load circuit.");
+                setStatusMessage("Nie udało się wczytać układu.");
             }
             showOpenConfirmPopup = false;
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+        if (ImGui::Button("Anuluj", ImVec2(120, 0))) {
             showOpenConfirmPopup = false;
             ImGui::CloseCurrentPopup();
         }
@@ -260,11 +261,11 @@ void UIManager::DrawMenuBar() {
     }
 
     if (showSaveAsCustomPopup) {
-        ImGui::OpenPopup("Save As Custom Component");
+        ImGui::OpenPopup("Zapisz jako komponent");
     }
 
-    if (ImGui::BeginPopupModal("Save As Custom Component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Enter a name for your custom component:");
+    if (ImGui::BeginPopupModal("Zapisz jako komponent", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Podaj nazwę dla komponentu:");
 
         static char nameBuffer[64] = "";
         if (showSaveAsCustomPopup) {
@@ -272,18 +273,18 @@ void UIManager::DrawMenuBar() {
             showSaveAsCustomPopup = false;
         }
 
-        ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer));
+        ImGui::InputText("Nazwa", nameBuffer, sizeof(nameBuffer));
 
         int inputCount = 0, outputCount = 0;
         for (const auto &comp: circuit->GetComponents()) {
             if (comp->getType() == "Input Pin") inputCount++;
             if (comp->getType() == "Output Pin") outputCount++;
         }
-        ImGui::Text("Inputs: %d, Outputs: %d", inputCount, outputCount);
+        ImGui::Text("Wejścia: %d, Wyjścia: %d", inputCount, outputCount);
 
         ImGui::Separator();
 
-        if (ImGui::Button("Save", ImVec2(120, 0))) {
+        if (ImGui::Button("Zapisz", ImVec2(120, 0))) {
             std::string name = nameBuffer;
             if (!name.empty()) {
                 CustomComponentDefinition def;
@@ -294,15 +295,15 @@ void UIManager::DrawMenuBar() {
 
                 if (CustomComponentManager::getInstance().addDefinition(def)) {
                     CustomComponentManager::getInstance().saveToFile(customComponentsFile);
-                    setStatusMessage("Saved custom component: " + name);
+                    setStatusMessage("Zapisano komponent: " + name);
                 } else {
-                    setStatusMessage("Component '" + name + "' already exists.");
+                    setStatusMessage("Komponent '" + name + "' już istnieje.");
                 }
             }
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+        if (ImGui::Button("Anuluj", ImVec2(120, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -310,18 +311,19 @@ void UIManager::DrawMenuBar() {
 }
 
 void UIManager::DrawComponentPicker() {
-    ImGui::Begin("Component Picker", &showComponentPicker);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(200, 150), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::Begin("Wybór komponentów", &showComponentPicker);
 
-    if (ImGui::BeginTabBar("ComponentCategories")) {
-        if (ImGui::BeginTabItem("Gates")) {
+    if (ImGui::BeginTabBar("KategorieKomponentow")) {
+        if (ImGui::BeginTabItem("Bramki")) {
             selectedCategory = 0;
-            ImGui::Combo("Gate Type", &selectedGate, gateTypes, IM_ARRAYSIZE(gateTypes));
+            ImGui::Combo("Typ bramki", &selectedGate, gateTypes, IM_ARRAYSIZE(gateTypes));
 
             if (selectedGate != 2) {
-                ImGui::SliderInt("Number of Inputs", &numberInputs, 2, 8);
+                ImGui::SliderInt("Liczba wejść", &numberInputs, 2, 8);
             }
 
-            if (ImGui::Button("Add Gate", ImVec2(-1, 0))) {
+            if (ImGui::Button("Dodaj bramkę", ImVec2(-1, 0))) {
                 AddGate(selectedGate, sf::Vector2f(100, 100));
             }
 
@@ -336,11 +338,11 @@ void UIManager::DrawComponentPicker() {
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Inputs")) {
+        if (ImGui::BeginTabItem("Wejścia")) {
             selectedCategory = 1;
-            ImGui::Combo("Input Type", &selectedInput, inputTypes, IM_ARRAYSIZE(inputTypes));
+            ImGui::Combo("Typ wejścia", &selectedInput, inputTypes, IM_ARRAYSIZE(inputTypes));
 
-            if (ImGui::Button("Add Input", ImVec2(-1, 0))) {
+            if (ImGui::Button("Dodaj wejście", ImVec2(-1, 0))) {
                 AddInput(selectedInput, sf::Vector2f(100, 100));
             }
             static const char *inputTypeNames[] = {"Button", "Input Pin", "ClockComponent"};
@@ -351,11 +353,11 @@ void UIManager::DrawComponentPicker() {
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Outputs")) {
+        if (ImGui::BeginTabItem("Wyjścia")) {
             selectedCategory = 2;
-            ImGui::Combo("Output Type", &selectedOutput, outputTypes, IM_ARRAYSIZE(outputTypes));
+            ImGui::Combo("Typ wyjścia", &selectedOutput, outputTypes, IM_ARRAYSIZE(outputTypes));
 
-            if (ImGui::Button("Add Output", ImVec2(-1, 0))) {
+            if (ImGui::Button("Dodaj wyjście", ImVec2(-1, 0))) {
                 AddOutput(selectedOutput, sf::Vector2f(100, 100));
             }
 
@@ -367,11 +369,11 @@ void UIManager::DrawComponentPicker() {
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Other")) {
+        if (ImGui::BeginTabItem("Inne")) {
             selectedCategory = 3;
-            ImGui::Combo("Component Type", &selectedOther, otherTypes, IM_ARRAYSIZE(otherTypes));
+            ImGui::Combo("Typ komponentu", &selectedOther, otherTypes, IM_ARRAYSIZE(otherTypes));
 
-            if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
+            if (ImGui::Button("Dodaj komponent", ImVec2(-1, 0))) {
                 AddOther(selectedOther, sf::Vector2f(100, 100));
             }
 
@@ -383,13 +385,13 @@ void UIManager::DrawComponentPicker() {
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Custom")) {
+        if (ImGui::BeginTabItem("Własne")) {
             selectedCategory = 4;
 
             auto names = CustomComponentManager::getInstance().getDefinitionNames();
             if (names.empty()) {
-                ImGui::TextDisabled("No custom components available.");
-                ImGui::TextDisabled("Use File > Save As Custom Component.");
+                ImGui::TextDisabled("Brak własnych komponentów.");
+                ImGui::TextDisabled("Użyj Plik > Zapisz jako komponent.");
             } else {
                 std::string comboItems;
                 for (const auto &name: names) {
@@ -402,14 +404,14 @@ void UIManager::DrawComponentPicker() {
                     selectedCustom = 0;
                 }
 
-                ImGui::Combo("Component", &selectedCustom, comboItems.c_str());
+                ImGui::Combo("Komponent", &selectedCustom, comboItems.c_str());
 
                 const auto *def = CustomComponentManager::getInstance().getDefinition(names[selectedCustom]);
                 if (def) {
-                    ImGui::Text("Inputs: %d, Outputs: %d", def->numInputs, def->numOutputs);
+                    ImGui::Text("Wejścia: %d, Wyjścia: %d", def->numInputs, def->numOutputs);
                 }
 
-                if (ImGui::Button("Add Component", ImVec2(-1, 0))) {
+                if (ImGui::Button("Dodaj komponent", ImVec2(-1, 0))) {
                     AddCustomComponent(names[selectedCustom], sf::Vector2f(100, 100));
                 }
 
@@ -424,12 +426,12 @@ void UIManager::DrawComponentPicker() {
 
     ImGui::Separator();
 
-    if (ImGui::Button(componentPreview.isVisible() ? "Hide Preview" : "Show Preview"))
+    if (ImGui::Button(componentPreview.isVisible() ? "Ukryj podgląd" : "Pokaż podgląd"))
         showComponentPreview = !showComponentPreview;
 
     ImGui::Separator();
 
-    if (ImGui::Button("Clear All", ImVec2(-1, 0))) {
+    if (ImGui::Button("Wyczyść wszystko", ImVec2(-1, 0))) {
         circuit->clear();
     }
 
@@ -437,22 +439,23 @@ void UIManager::DrawComponentPicker() {
 }
 
 void UIManager::DrawSimulationControl() {
-    ImGui::Begin("Simulation Control", &showSimulationControl);
-    ImGui::Checkbox("Run Simulation", &simulationRunning);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(200, 100), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::Begin("Sterowanie symulacją", &showSimulationControl);
+    ImGui::Checkbox("Uruchom symulację", &simulationRunning);
     ImGui::SameLine();
-    if (ImGui::Button("Step"))
+    if (ImGui::Button("Krok"))
         circuit->update();
-    ImGui::SliderFloat("Update Interval (s)", &simulationInterval, 0.0f, 2.0f, "%.2f");
+    ImGui::SliderFloat("Interwal aktualizacji (s)", &simulationInterval, 0.0f, 2.0f, "%.2f");
     if (simulationInterval == 0.0f)
-        ImGui::Text("Mode: Every frame");
+        ImGui::Text("Tryb: Co klatkę");
     else
-        ImGui::Text("Mode: Every %.2f seconds", simulationInterval);
+        ImGui::Text("Tryb: Co %.2f sekund", simulationInterval);
 
     ImGui::Separator();
-    ImGui::Text("Clocks:");
-    ImGui::Checkbox("Enable Clocks", &clocksEnabled);
+    ImGui::Text("Zegary:");
+    ImGui::Checkbox("Włącz zegary", &clocksEnabled);
     ImGui::SameLine();
-    if (ImGui::Button("Tick Clocks")) {
+    if (ImGui::Button("Tyknięcie zegarów")) {
         circuit->tickClocks();
         circuit->update();
     }
@@ -460,46 +463,47 @@ void UIManager::DrawSimulationControl() {
     ImGui::Separator();
     bool prevDrawPins = shouldDrawPins;
     bool prevDrawLabels = shouldDrawLabels;
-    ImGui::Checkbox("Draw all pins", &shouldDrawPins);
-    ImGui::Checkbox("Draw all labels", &shouldDrawLabels);
+    ImGui::Checkbox("Rysuj wszystkie piny", &shouldDrawPins);
+    ImGui::Checkbox("Rysuj wszystkie etykiety", &shouldDrawLabels);
 
     if (prevDrawPins != shouldDrawPins) circuit->setDrawAllPins(shouldDrawPins);
     if (prevDrawLabels != shouldDrawLabels) circuit->setDrawLabels(shouldDrawLabels);
 
     ImGui::Separator();
-    ImGui::Text("Grid:");
+    ImGui::Text("Siatka:");
     bool showGrid = circuit->getShowGrid();
-    if (ImGui::Checkbox("Show Grid", &showGrid)) {
+    if (ImGui::Checkbox("Pokaż siatkę", &showGrid)) {
         circuit->setShowGrid(showGrid);
     }
     bool snapToGrid = circuit->getSnapToGrid();
-    if (ImGui::Checkbox("Snap to Grid", &snapToGrid)) {
+    if (ImGui::Checkbox("Przyciągaj do siatki", &snapToGrid)) {
         circuit->setSnapToGrid(snapToGrid);
     }
     float gridSize = circuit->getGridSize();
-    if (ImGui::SliderFloat("Grid Size", &gridSize, 10.0f, 50.0f, "%.0f")) {
+    if (ImGui::SliderFloat("Rozmiar siatki", &gridSize, 10.0f, 50.0f, "%.0f")) {
         circuit->setGridSize(gridSize);
     }
 
     ImGui::Separator();
-    ImGui::Text("View Control:");
-    ImGui::TextDisabled("(Use Mouse Wheel to Zoom/Pan)");
+    ImGui::Text("Sterowanie widokiem:");
+    ImGui::TextDisabled("(Użyj kółka myszy do przybliżania/przewijania)");
 
     ImGui::End();
 }
 
 void UIManager::DrawComponentList() {
-    ImGui::Begin("Component List", &showComponentList);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(180, 100), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::Begin("Lista komponentów", &showComponentList);
     const auto &components = circuit->GetComponents();
     for (int i = 0; i < static_cast<int>(components.size()); i++) {
         ImGui::PushID(i);
         ImGui::Text("%s", components[i]->GetLabel().c_str());
         ImGui::SameLine();
-        if (ImGui::Button("Delete")) {
+        if (ImGui::Button("Usuń")) {
             circuit->removeComponent(components[i]->GetId());
         }
         ImGui::SameLine();
-        if (ImGui::Button("Go to")) {
+        if (ImGui::Button("Przejdź do")) {
             circuit->GotoComponent(components[i]->GetId(), *window);
         }
         ImGui::PopID();
@@ -517,23 +521,23 @@ void UIManager::DrawContextMenu() {
     if (ImGui::BeginPopup("ComponentContextMenu")) {
         Component *targetComp = circuit->getComponentById(contextMenuTargetId);
 
-        if (ImGui::MenuItem("Delete")) {
+        if (ImGui::MenuItem("Usuń")) {
             circuit->removeComponent(contextMenuTargetId);
             contextMenuTargetId = -1;
         }
 
-        if (targetComp && ImGui::BeginMenu("Plot Pin...")) {
+        if (targetComp && ImGui::BeginMenu("Wykres pinu...")) {
             const auto &inputs = targetComp->getInputs();
             const auto &outputs = targetComp->getOutputs();
 
             bool hasPins = !inputs.empty() || !outputs.empty();
             bool atMaxCapacity = pinPlotter.getPinCount() >= PinPlotter::MAX_PINS;
             if (atMaxCapacity) {
-                ImGui::TextDisabled("Max %zu pins monitored", PinPlotter::MAX_PINS);
+                ImGui::TextDisabled("Maks. %zu pinów monitorowanych", PinPlotter::MAX_PINS);
                 ImGui::Separator();
             }
             if (!inputs.empty()) {
-                ImGui::TextDisabled("Inputs:");
+                ImGui::TextDisabled("Wejścia:");
                 for (size_t i = 0; i < inputs.size(); ++i) {
                     std::string label = targetComp->GetLabel() + " IN" + std::to_string(i);
                     if (ImGui::MenuItem(label.c_str(), nullptr, false, !atMaxCapacity)) {
@@ -545,7 +549,7 @@ void UIManager::DrawContextMenu() {
             }
             if (!outputs.empty()) {
                 if (!inputs.empty()) ImGui::Separator();
-                ImGui::TextDisabled("Outputs:");
+                ImGui::TextDisabled("Wyjścia:");
                 for (size_t i = 0; i < outputs.size(); ++i) {
                     std::string label = targetComp->GetLabel() + " OUT" + std::to_string(i);
                     if (ImGui::MenuItem(label.c_str(), nullptr, false, !atMaxCapacity)) {
@@ -556,7 +560,7 @@ void UIManager::DrawContextMenu() {
                 }
             }
             if (!hasPins)
-                ImGui::TextDisabled("No pins available");
+                ImGui::TextDisabled("Brak dostępnych pinów");
 
             ImGui::EndMenu();
         }
