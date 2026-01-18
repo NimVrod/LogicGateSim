@@ -43,3 +43,19 @@ option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" OFF)
 option(IMGUI_SFML_IMGUI_DEMO "Build imgui_demo.cpp" ON)
 
 FetchContent_MakeAvailable(imgui-sfml)
+
+# TinyXML-2 for circuit serialization
+FetchContent_Declare(
+  tinyxml2
+  GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+  GIT_TAG        10.0.0
+)
+FetchContent_MakeAvailable(tinyxml2)
+
+# Native File Dialog Extended for file open/save dialogs
+FetchContent_Declare(
+  nfd
+  GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+  GIT_TAG        v1.2.1
+)
+FetchContent_MakeAvailable(nfd)

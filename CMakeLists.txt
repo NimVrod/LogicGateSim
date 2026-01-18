@@ -11,11 +11,12 @@
 cmake_minimum_required(VERSION 4.1.1)
 cmake_policy(VERSION 4.1.1)
 
-project(imgui-sfml-example
+project(LogicSimulator
   VERSION 1.0
   LANGUAGES CXX
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

@@ -1,10 +1,9 @@
-﻿#include "Wire.h"
+﻿#include "../Include/Wire.h"
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 
-Wire::Wire(Pin* start, Pin* end)
-    : start(start), end(end)
-{
+Wire::Wire(Pin *start, Pin *end)
+    : start(start), end(end) {
 }
 
 void Wire::update() {
@@ -13,7 +12,7 @@ void Wire::update() {
     }
 }
 
-void Wire::draw(sf::RenderWindow& window) {
+void Wire::draw(sf::RenderTarget &target) {
     if (!start || !end) return;
 
     sf::Vector2f startPos = start->getPosition();
@@ -26,5 +25,5 @@ void Wire::draw(sf::RenderWindow& window) {
         sf::Vertex{endPos, color}
     };
 
-    window.draw(line, 2, sf::PrimitiveType::Lines);
+    target.draw(line, 2, sf::PrimitiveType::Lines);
 }

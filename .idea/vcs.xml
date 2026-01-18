@@ -5,17 +5,12 @@
     <mapping directory="$PROJECT_DIR$/build/_deps/freetype-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/_deps/freetype-src/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/_deps/imgui-sfml-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/_deps/nfd-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/_deps/tinyxml2-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/freetype-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/freetype-src/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/imgui-sfml-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/_deps/freetype-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/_deps/freetype-src/subprojects/dlg" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/_deps/imgui-sfml-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/flac-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/freetype-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/freetype-src/subprojects/dlg" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/imgui-sfml-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/ogg-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/out/build/x64-Debug/_deps/vorbis-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/nfd-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/tinyxml2-src" vcs="Git" />
   </component>
 </project>

@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 
 class Component;
@@ -12,20 +12,28 @@ enum class PinType {
 
 class Pin {
 public:
-    Pin(Component* parent, PinType type, sf::Vector2f relativePosition);
+    static const float RADIUS;
+
+    Pin(Component *parent, PinType type, sf::Vector2f relativePosition);
 
     void setValue(int value);
+
     int getValue() const;
+
     PinType getType() const;
 
     sf::Vector2f getPosition() const;
-    void setRelativePosition(sf::Vector2f relativePosition);
-    Component* getParent() const;
 
-    void draw(sf::RenderWindow& window);
+    void setRelativePosition(sf::Vector2f relativePosition);
+
+    Component *getParent() const;
+
+    void draw(sf::RenderTarget &target) const;
+
+    bool mouseOver(sf::Vector2f mousePos) const;
 
 private:
-    Component* parent;
+    Component *parent;
     PinType type;
     sf::Vector2f relativePosition;
     int value;
