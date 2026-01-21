@@ -129,7 +129,7 @@ void ComponentPreview::generateTruthTable() {
             "JKFlipFlop",
             {{"J", "K", "Q+"}, {{"0", "0", "Q"}, {"0", "1", "0"}, {"1", "0", "1"}, {"1", "1", "-"}}}
         },
-        {"TFlipFlop", {{"T", "Q+"}, {{"0", "Q"}, {"1", "Toggle"}}}}
+        {"TFlipFlop", {{"T", "Q+"}, {{"0", "Q"}, {"1", "Q'"}}}}
     };
 
     auto staticIt = staticTables.find(currentTypeName);

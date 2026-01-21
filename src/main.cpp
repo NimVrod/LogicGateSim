@@ -111,6 +111,22 @@ int main() {
                         circuitView.move(panAmount);
                         window.setView(circuitView);
                     }
+                } else if (event->getIf<sf::Event::KeyPressed>()) {
+                    // Using isKeyPressed to check real-time state, allowing diagonal panning
+                    constexpr float panSpeed = 20.0f;
+                    sf::Vector2f panAmount(0.f, 0.f);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+                        panAmount.x = -panSpeed;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+                        panAmount.x = panSpeed;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+                        panAmount.y = -panSpeed;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+                        panAmount.y = panSpeed;
+                    if (panAmount.x != 0.f || panAmount.y != 0.f) {
+                        circuitView.move(panAmount);
+                        window.setView(circuitView);
+                    }
                 }
 
                 circuit.handleEvent(*event, window);
